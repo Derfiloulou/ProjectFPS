@@ -46,16 +46,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\FirstPersonDrifter.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\LockMouse.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\MouseLook.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\CameraFadeOnStart.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\CameraZoom.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\CheckIfBelowLevel.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\HeadBob.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\Optional\PauseMenu.cs" />
-     <Compile Include="Assets\First Person Drifter Controller\Scripts\Utils\CameraFade.cs" />
-     <Compile Include="Assets\Scripts\Networking.cs" />
+     <Compile Include="Assets\LaserBeam.cs" />
      <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\BlendOneOne.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\NoiseEffectShaderRGB.shader" />
@@ -82,7 +73,6 @@
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\FisheyeShader.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\Contrast Stretch\Apply.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\frag_ao.cginc" />
-     <None Include="Assets\First Person Drifter Controller\info.txt" />
      <None Include="Assets\Standard Assets\Effects\ToonShading\Shaders\ToonBasicOutline.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_DepthOfField\DepthOfField34.shader" />
      <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\_BloomAndFlares\MobileBlur.shader" />
