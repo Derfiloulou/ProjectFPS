@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\Networking\CharaController.cs" />
+     <Compile Include="Assets\Scripts\Networking\ChatBoxManager.cs" />
      <Compile Include="Assets\Scripts\Networking\Networking.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
