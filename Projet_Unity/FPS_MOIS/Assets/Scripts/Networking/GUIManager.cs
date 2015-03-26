@@ -37,13 +37,14 @@ public class GUIManager : MonoBehaviour {
 		chatBoxScrollBar.value = 0;
 	}
 
-	public void CreateButton(string buttonText){
+	public void CreateButton(string buttonText, int _id){
 		GameObject button = Instantiate(hostButton, Vector3.zero, Quaternion.identity) as GameObject;
 		button.transform.SetParent(canvas.transform);
 		RectTransform buttonTransform = button.GetComponent<RectTransform>();
 		float positionY = -hostButtonList.Count * buttonTransform.sizeDelta.y -160f;
 		buttonTransform.position = new Vector3(10, Screen.height + positionY, 0);
 		button.GetComponentInChildren<Text>().text = buttonText;
+		button.GetComponent<ButtonScript>().id = _id;
 		hostButtonList.Add(button);
 	}
 
