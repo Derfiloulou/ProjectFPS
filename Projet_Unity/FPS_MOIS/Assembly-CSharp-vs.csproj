@@ -46,7 +46,6 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\ButtonScript.cs" />
      <Compile Include="Assets\Scripts\Networking\CharaController.cs" />
      <Compile Include="Assets\Scripts\Networking\GUIManager.cs" />
      <Compile Include="Assets\Scripts\Networking\NetworkManager.cs" />
