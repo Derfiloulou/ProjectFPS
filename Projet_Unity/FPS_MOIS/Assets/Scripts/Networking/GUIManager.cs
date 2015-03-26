@@ -50,7 +50,7 @@ public class GUIManager : MonoBehaviour {
 	void Start () {
 		chatBoxRectTransform = chatBox.GetComponent<RectTransform>();
 		chatBoxText= chatBox.GetComponent<Text>();
-		StartCoroutine(SendMessage("GAME", "Ready"));
+		StartCoroutine(SendMessage("INFO", "Ready"));
 	}
 
 	void Update () {

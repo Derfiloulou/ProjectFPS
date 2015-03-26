@@ -4,8 +4,8 @@ using System.Collections;
 
 public class Networking : MonoBehaviour {
 
-	private const string typeName = "UniqueGameName";
-	private const string gameName = "FPSGame";
+	private const string typeName = "ThisIsMyFPS";
+	private const string gameName = "ThisIsMyFPSRoom";
 	private HostData[] hostList;
 
 	bool isRefreshing = false;
@@ -21,7 +21,9 @@ public class Networking : MonoBehaviour {
 		if (!Network.isClient && !Network.isServer)
 		{
 			StartServer();
-		}else{
+		}else if(Network.isClient){
+			StartCoroutine(GUIManager.instance.SendMessage("GAME", "You can't create a server while you are a client !"));
+		}else if(Network.isServer){
 			StartCoroutine(GUIManager.instance.SendMessage("GAME", "Server already initialized !"));
 		}
 	}
@@ -31,6 +33,8 @@ public class Networking : MonoBehaviour {
 		if (!Network.isClient && !Network.isServer)
 		{
 			JoinServer(hostList[0]);
+		}else if(Network.isServer){
+			StartCoroutine(GUIManager.instance.SendMessage("GAME", "You can't join while you are a server !"));
 		}
 	}
 
@@ -39,7 +43,8 @@ public class Networking : MonoBehaviour {
 		if (!Network.isClient && !Network.isServer)
 		{
 			RefreshHostList();
-
+		}else if(Network.isServer){
+			StartCoroutine(GUIManager.instance.SendMessage("GAME", "You can't refresh while you are the server !"));
 		}
 	}
 	
@@ -54,9 +59,10 @@ public class Networking : MonoBehaviour {
 	// Demarrage du serveur
 	private void StartServer()
 	{
+		MasterServer.ipAddress = "127.0.0.1";
 		Network.InitializeServer(4, 25000, !Network.HavePublicAddress());
 		MasterServer.RegisterHost(typeName, gameName);
-		MasterServer.ipAddress = "127.0.0.1";
+
 
 	}
 
