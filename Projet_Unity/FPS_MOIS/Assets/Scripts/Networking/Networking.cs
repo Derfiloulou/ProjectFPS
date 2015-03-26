@@ -5,8 +5,12 @@ using System.Collections;
 public class Networking : MonoBehaviour {
 
 	private const string typeName = "UniqueGameName";
-	private const string gameName = "RoomName";
+	private const string gameName = "FPSGame";
 	private HostData[] hostList;
+
+	bool isRefreshing = false;
+
+
 
 
 
@@ -18,7 +22,7 @@ public class Networking : MonoBehaviour {
 		{
 			StartServer();
 		}else{
-			StartCoroutine(ChatBoxManager.instance.SendMessage("GAME", "Server already initialized !"));
+			StartCoroutine(GUIManager.instance.SendMessage("GAME", "Server already initialized !"));
 		}
 	}
 
@@ -35,6 +39,7 @@ public class Networking : MonoBehaviour {
 		if (!Network.isClient && !Network.isServer)
 		{
 			RefreshHostList();
+
 		}
 	}
 	
@@ -43,6 +48,8 @@ public class Networking : MonoBehaviour {
 	void Start(){
 
 	}
+
+
 	
 	// Demarrage du serveur
 	private void StartServer()
@@ -50,18 +57,22 @@ public class Networking : MonoBehaviour {
 		Network.InitializeServer(4, 25000, !Network.HavePublicAddress());
 		MasterServer.RegisterHost(typeName, gameName);
 		MasterServer.ipAddress = "127.0.0.1";
+
 	}
 
 	// Appelée automatiquement quand le serveur est initialisé
 	void OnServerInitialized()
 	{
-		StartCoroutine(ChatBoxManager.instance.SendMessage("GAME", "Server initialized !"));
+		StartCoroutine(GUIManager.instance.SendMessage("GAME", "Server initialized !"));
 	}
 
 	// Refresh la liste des hotes
 	private void RefreshHostList()
 	{
+		isRefreshing = true;
+		StartCoroutine(GUIManager.instance.SendMessage("GAME", "Refreshed"));
 		MasterServer.RequestHostList(typeName);
+
 	}
 
 	// On MasterServer event
@@ -80,17 +91,23 @@ public class Networking : MonoBehaviour {
 	// RAppelée automatiquement quand connecté au serveur
 	void OnConnectedToServer()
 	{
-		StartCoroutine(ChatBoxManager.instance.SendMessage("GAME", "Server joined !"));
+		StartCoroutine(GUIManager.instance.SendMessage("GAME", "Server joined !"));
 	}
 
 	void Update(){
-		if (hostList != null)
+
+		if (hostList != null && isRefreshing == true)
 		{
+			foreach(GameObject i in GUIManager.instance.hostButtonList){
+				Destroy(i);
+			}
+			GUIManager.instance.hostButtonList.Clear();
+			
 			for (int i = 0; i < hostList.Length; i++)
 			{
-				Debug.Log(hostList[i].gameName);
-					//JoinServer(hostList[i]);
+				GUIManager.instance.CreateButton("Host " + hostList[i].ip[0].ToString());
 			}
+			isRefreshing = false;
 		}
 	}
 }
