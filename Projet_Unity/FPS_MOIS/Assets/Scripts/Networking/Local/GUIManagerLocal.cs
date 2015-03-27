@@ -22,18 +22,20 @@ public class GUIManagerLocal : MonoBehaviour {
 	public Button disconnectServerButton;
 	[Header("Chat box")]
 	public GameObject chatBox;
-	Text chatBoxText;
-	RectTransform chatBoxRectTransform;
+	[HideInInspector]
+	public Text chatBoxText;
+	[HideInInspector]
+	public RectTransform chatBoxRectTransform;
 	public Scrollbar chatBoxScrollBar;
 	public InputField chatBoxInputField;
 	[Header("Connected players")]
 	public GameObject connectedPlayers;
-	Text connectedPlayersText;
-	RectTransform connectedPlayersRectTransform;
+	[HideInInspector]
+	public Text connectedPlayersText;
+	[HideInInspector]
+	public RectTransform connectedPlayersRectTransform;
 	public Scrollbar connectedPlayersScrollBar;
-
-	[Header("Server info name")]
-	public string info = "INFO";
+	
 
 	bool isChatActive = false;
 
@@ -67,40 +69,12 @@ public class GUIManagerLocal : MonoBehaviour {
 	}
 
 
-	// Send message chatBox Custom
-	public IEnumerator SendMessage(string source, string message){
-		
-		Vector2 chatboxSize = chatBoxRectTransform.sizeDelta;
-		
-		chatBoxText.text += "<" + source + "> : " + message + "\n\r";
-		chatboxSize.y += (chatBoxText.lineSpacing*2 + chatBoxText.fontSize);
-		chatBoxRectTransform.sizeDelta = chatboxSize;
-		yield return new WaitForEndOfFrame();
-		chatBoxScrollBar.value = 0;
-	}
-
-	// Refresh des joeuurs connectés
-
-	public IEnumerator RefreshConnectedPlayers(){
-		
-		foreach(NetworkPlayer p in Network.connections){
-			Vector2 connectedPlayersSize = connectedPlayersRectTransform.sizeDelta;
-			connectedPlayersText.text += p.ipAddress;
-			connectedPlayersSize.y += (connectedPlayersText.lineSpacing*2 + connectedPlayersText.fontSize);
-			connectedPlayersRectTransform.sizeDelta = connectedPlayersSize;
-		}
-
-		yield return new WaitForEndOfFrame();
-		connectedPlayersScrollBar.value = 0;
-		yield return new WaitForSeconds(1);
-		StartCoroutine(RefreshConnectedPlayers());
-	}
-
-
 	void Start () {
 		chatBoxRectTransform = chatBox.GetComponent<RectTransform>();
 		chatBoxText= chatBox.GetComponent<Text>();
-		StartCoroutine(SendMessage(info, "Your IP adress is " + Network.player.ipAddress));
+		connectedPlayersRectTransform = connectedPlayers.GetComponent<RectTransform>();
+		connectedPlayersText = connectedPlayers.GetComponent<Text>();
+		NetworkManagerLocal.instance.SendDebugMessageInChat(NetworkManagerLocal.instance.info, "Your IP adress is " + Network.player.ipAddress);
 	}
 
 	void Update () {
@@ -116,7 +90,7 @@ public class GUIManagerLocal : MonoBehaviour {
 		if((Input.GetKeyDown(KeyCode.Return) && isChatActive == true)  || chatBoxInputField.isFocused == false){
 
 			if(chatBoxInputField.text != ""){
-				StartCoroutine(SendMessage(playerNameInputField.text, chatBoxInputField.text));
+				NetworkManagerLocal.instance.nView.RPC("SendMessageInChat", RPCMode.All, NetworkManagerLocal.instance.playerName, chatBoxInputField.text);
 			}
 
 			chatBoxInputField.text = "";

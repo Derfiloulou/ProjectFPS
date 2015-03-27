@@ -1,10 +1,22 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class NetworkManagerLocal : MonoBehaviour {
 
 	public int maxPlayers = 4;
+	public List<string> playerList = new List<string>();
+
+	[Header("Server messages")]
+	public string info = "INFO";
+	public string error = "ERROR";
+
+	[HideInInspector]
+	public NetworkView nView;
+	[HideInInspector]
+	public string playerName;
+	string talkingPlayer;
 
 	// Singleton
 	static NetworkManagerLocal mInst;
@@ -17,6 +29,9 @@ public class NetworkManagerLocal : MonoBehaviour {
 		guiManagerLocal = GUIManagerLocal.instance;
 	}
 
+	void Start(){
+		nView = GetComponent<NetworkView> ();
+	}
 	
 	// ========================= Fonctions GUI =========================
 
@@ -30,9 +45,9 @@ public class NetworkManagerLocal : MonoBehaviour {
 	// Demarrage du serveur GUI
 	public void GUIStartServer(){
 		if(guiManagerLocal.playerNameInputField.text == ""){
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Enter a player name !"));
+			SendDebugMessageInChat(error, "Enter a player name !");
 		}else if(guiManagerLocal.serverNameInputField.text == ""){
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Enter a server name !"));
+			SendDebugMessageInChat(error, "Enter a server name !");
 		}else if (!Network.isClient && !Network.isServer){
 			StartServer();
 		}
@@ -41,7 +56,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 	// Rejoindre le serveur GUI
 	public void GUIJoinServer(){
 		if(guiManagerLocal.playerNameInputField.text == ""){
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Enter a player name !"));
+			SendDebugMessageInChat(error, "Enter a player name !");
 		}else if (!Network.isClient && !Network.isServer){
 			JoinServer();
 		}
@@ -71,33 +86,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 		// Initialize server
 		Network.InitializeServer(maxPlayers, int.Parse(serverPort), !Network.HavePublicAddress());
 	}
-
-
-
-	// Appelée automatiquement quand le serveur est initialisé
-	void OnServerInitialized()
-	{
-		StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Server initialized !"));
-		GUIState(true);
-	}
 	
-	void OnFailedToConnect(NetworkConnectionError error){
-		StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Failed to connect to the server : " + error));
-	}
-
-
-	void OnDisconnectedFromServer(NetworkDisconnection message){
-		// Fermeture du serveur
-		if (Network.isServer)
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Local server connection disconnected."));
-		// Connexion perdue
-		else if (message == NetworkDisconnection.LostConnection)
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Connection lost !"));
-		// Deconnexion du serveur
-		else
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Disconnected from the server"));
-		GUIState(false);
-	}
 
 
 
@@ -116,37 +105,133 @@ public class NetworkManagerLocal : MonoBehaviour {
 				int i = 0;
 				bool check = int.TryParse(s, out i);
 				if(check == false){
-					StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Enter a valid IP adress !"));
+					SendDebugMessageInChat(error, "Enter a valid IP adress !");
 					break;
 				} 
 
 				// Vérification du port
 				else if(!isNumericPort) {
-					StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Enter a valid port !")); 
+					SendDebugMessageInChat(error, "Enter a valid port !"); 
 					break;
 				}
 
 				else {
 					Network.Connect(_ip, _port);
-					StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Trying to join : " + _ip + "..."));
+					SendDebugMessageInChat(info, "Trying to join : " + _ip + "...");
 					break;
 				}
 			}
 		}else{
-			StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Enter a valid IP adress !"));
+			SendDebugMessageInChat(error, "Enter a valid IP adress !");
 		}
 	}
 
 	public void LeaveServer(){
 		Network.Disconnect();
+		StopAllCoroutines();
+		guiManagerLocal.connectedPlayers.GetComponent<Text>().text = "";
 	}
 
-	
+	void OnFailedToConnect(NetworkConnectionError errorMessage){
+		SendDebugMessageInChat(error, "Failed to connect to the server : " + errorMessage);
+	}
+
+	void OnServerInitialized()
+	{
+		SendDebugMessageInChat(info, "Server initialized !");
+		playerName = guiManagerLocal.playerNameInputField.text;
+		StartCoroutine(RefreshConnectedPlayers());
+		GUIState(true);
+
+	}
+
 	// Appelée automatiquement quand connecté au serveur
 	void OnConnectedToServer()
 	{
-		StartCoroutine(guiManagerLocal.SendMessage(guiManagerLocal.info, "Server joined as " + guiManagerLocal.playerNameInputField.text + " !"));
+		SendDebugMessageInChat(info, "Server joined as " + guiManagerLocal.playerNameInputField.text + " !");
+		playerName = guiManagerLocal.playerNameInputField.text;
+		StartCoroutine(RefreshConnectedPlayers());
 		GUIState(true);
 	}
+
+	void OnDisconnectedFromServer(NetworkDisconnection message){
+		// Fermeture du serveur
+		if (Network.isServer)
+			SendDebugMessageInChat(info, "Local server connection disconnected.");
+		// Connexion perdue
+		else if (message == NetworkDisconnection.LostConnection)
+			SendDebugMessageInChat(error, "Connection lost !");
+		// Deconnexion du serveur
+		else
+			SendDebugMessageInChat(info, "Disconnected from the server");
+		StopAllCoroutines();
+		guiManagerLocal.connectedPlayers.GetComponent<Text>().text = "";
+		GUIState(false);
+	}
+
+	// ========================= Network View =========================
+
+	[RPC]
+	public void AddPlayerInfo(string infos){
+		if(!playerList.Contains(infos))
+			playerList.Add(infos);
+	}
+
+	public IEnumerator RefreshConnectedPlayers(){
+		
+		Vector2 connectedPlayersSize = guiManagerLocal.connectedPlayersRectTransform.sizeDelta;
+		Text cpt = guiManagerLocal.connectedPlayersText;
+		RectTransform cprt = guiManagerLocal.connectedPlayersRectTransform;
+		
+		cpt.text = "Connected players :" + "\n\r" + "\n\r";
+		nView.RPC("AddPlayerInfo", RPCMode.All, playerName);
+		playerList.Sort();
+
+		foreach(string s in playerList){
+			cpt.text += s + "\n\r";
+		}
+
+		// taille d'une ligne (ecart + taille font) multplié par nombre de ligne (nombre de connexions) + premiere ligne + nom du joueur
+		connectedPlayersSize.y = (cpt.lineSpacing*2 + cpt.fontSize)*(playerList.Count+2);
+		cprt.sizeDelta = connectedPlayersSize;
+
+		playerList.Clear();
+
+		yield return new WaitForSeconds(1);
+		StartCoroutine(RefreshConnectedPlayers());
+	}
+
+	// Envoie un debug message dans la chatBox
+	public void SendDebugMessageInChat(string source, string message){
+		
+		Vector2 chatboxSize = guiManagerLocal.chatBoxRectTransform.sizeDelta;
+		Text cbt = guiManagerLocal.chatBoxText;
+		RectTransform cbrt = guiManagerLocal.chatBoxRectTransform;
+
+		cbt.text += "<" + source + "> : " + message + "\n\r";
+		chatboxSize.y += (cbt.lineSpacing*2 + cbt.fontSize);
+		cbrt.sizeDelta = chatboxSize;
+		guiManagerLocal.chatBoxScrollBar.value = 0;
+	}
+
+	// Envoie un message dans le chat
+
+
+	[RPC]
+	public void SendMessageInChat(string name, string message){
+		
+		Vector2 chatboxSize = guiManagerLocal.chatBoxRectTransform.sizeDelta;
+		Text cbt = guiManagerLocal.chatBoxText;
+		RectTransform cbrt = guiManagerLocal.chatBoxRectTransform;
+
+		cbt.text += "<" + name + "> : " + message + "\n\r";
+		chatboxSize.y += (cbt.lineSpacing*2 + cbt.fontSize);
+		cbrt.sizeDelta = chatboxSize;
+		guiManagerLocal.chatBoxScrollBar.value = 0; // ceci est buggé
+	}
+
+
+
 	
+
 }
