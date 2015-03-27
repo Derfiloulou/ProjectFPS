@@ -12,7 +12,7 @@ Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity
 Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
 Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
 Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-- Completed reload, in  0.087 seconds
+- Completed reload, in  0.073 seconds
 desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
@@ -20,33 +20,5 @@ desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
 Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
 Setting up 2 worker threads for Enlighten.
-  Thread -> id: 103c -> priority: 1 
-  Thread -> id: 1a84 -> priority: 1 
-Failed to initialize network interface. Is the listen port already in use?
- 
-(Filename:  Line: 214)
-
-Failed to initialize network interface. Is the listen port already in use?
- 
-(Filename:  Line: 214)
-
-Failed to initialize network interface. Is the listen port already in use?
- 
-(Filename:  Line: 214)
-
-Failed to initialize network interface. Is the listen port already in use?
- 
-(Filename:  Line: 214)
-
-Failed to initialize network interface. Is the listen port already in use?
- 
-(Filename:  Line: 214)
-
-Failed to initialize network interface. Is the listen port already in use?
- 
-(Filename:  Line: 214)
-
-The server has disconnected from the client. Most likely the server has shut down.
- 
-(Filename:  Line: 754)
-
+  Thread -> id: 1944 -> priority: 1 
+  Thread -> id: 1638 -> priority: 1 

@@ -5,35 +5,67 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 
-public class GUIManager : MonoBehaviour {
+public class GUIManagerLocal : MonoBehaviour {
 
 	public Canvas canvas;
+	[Header("Player name")]
+	public InputField playerNameInputField;
+	[Header("Create server")]
+	public Button createServerButton;
+	public InputField serverNameInputField;
+	public InputField portCreateInputField;
+	[Header("Join server")]
+	public Button joinServerButton;
+	public InputField IPJoinInputField;
+	public InputField portJoinInputField;
+	[Header("Disconnect")]
+	public Button disconnectServerButton;
+	[Header("Chat box")]
 	public GameObject chatBox;
 	Text chatBoxText;
 	RectTransform chatBoxRectTransform;
 	public Scrollbar chatBoxScrollBar;
 	public InputField chatBoxInputField;
+	[Header("Connected players")]
 	public GameObject connectedPlayers;
 	Text connectedPlayersText;
 	RectTransform connectedPlayersRectTransform;
 	public Scrollbar connectedPlayersScrollBar;
-	public InputField portCreateInputField;
-	public InputField IPJoinInputField;
-	public InputField portJoinInputField;
-	public InputField roomName;
+
+	[Header("Server info name")]
 	public string info = "INFO";
 
 	bool isChatActive = false;
-	public bool isRunning = false;
 
 
-	static GUIManager mInst;
-	static public GUIManager instance { get { return mInst; } }		
+	static GUIManagerLocal mInst;
+	static public GUIManagerLocal instance { get { return mInst; } }
 
 	void Awake () {
 		if(mInst == null) mInst = this;
 		DontDestroyOnLoad(this); 		
 	}
+
+	public void PlayerNameState(bool isInteractable){
+		playerNameInputField.interactable = isInteractable;
+	}
+	
+	public void CreateServerState(bool isInteractable){
+		createServerButton.interactable = isInteractable;
+		serverNameInputField.interactable = isInteractable;
+		portCreateInputField.interactable = isInteractable;
+	}
+	
+	public void JoinServerState(bool isInteractable){
+		joinServerButton.interactable = isInteractable;
+		IPJoinInputField.interactable = isInteractable;
+		portJoinInputField.interactable = isInteractable;
+	}
+
+	public void DisconnectState(bool isInteractable){
+		disconnectServerButton.interactable = isInteractable;
+	}
+
 
 	// Send message chatBox Custom
 	public IEnumerator SendMessage(string source, string message){
@@ -47,7 +79,8 @@ public class GUIManager : MonoBehaviour {
 		chatBoxScrollBar.value = 0;
 	}
 
-	// Refresh connectedPlayers
+	// Refresh des joeuurs connectés
+
 	public IEnumerator RefreshConnectedPlayers(){
 		
 		foreach(NetworkPlayer p in Network.connections){
@@ -63,36 +96,11 @@ public class GUIManager : MonoBehaviour {
 		StartCoroutine(RefreshConnectedPlayers());
 	}
 
-	IEnumerator ServerRunning(){
-		bool previousState = isRunning;
-		Process[] isServerRunning = System.Diagnostics.Process.GetProcessesByName("MasterServer");
-
-		if(isServerRunning.Length == 0){
-			isRunning = false;
-		}else{
-			isRunning = true;
-		}
-		if(previousState == true && isRunning == false && !Network.isServer){
-			StartCoroutine(SendMessage(info, "MasterServer is not running. You can't create a server."));
-		} 
-		if(previousState == true && isRunning == false && Network.isServer){
-			StartCoroutine(SendMessage(info, "MasterServer is not running anymore !"));
-			NetworkManager.instance.GUILeaveServer();
-		} 
-		if(previousState == false && isRunning == true) StartCoroutine(SendMessage(info, "Create a server or join an existing one."));
-		yield return new WaitForSeconds(1);
-		StartCoroutine(ServerRunning());
-	}
-
 
 	void Start () {
 		chatBoxRectTransform = chatBox.GetComponent<RectTransform>();
 		chatBoxText= chatBox.GetComponent<Text>();
 		StartCoroutine(SendMessage(info, "Your IP adress is " + Network.player.ipAddress));
-		StartCoroutine(ServerRunning());
-		if(!isRunning){
-			StartCoroutine(SendMessage(info, "MasterServer is not running. Can't create a server."));
-		}
 	}
 
 	void Update () {
@@ -106,26 +114,11 @@ public class GUIManager : MonoBehaviour {
 			isChatActive = true;
 		}
 		if((Input.GetKeyDown(KeyCode.Return) && isChatActive == true)  || chatBoxInputField.isFocused == false){
+
 			if(chatBoxInputField.text != ""){
-
-				string splitText = chatBoxInputField.text;
-				string[] splitArray = splitText.Split(' ');
-
-				if(chatBoxInputField.text == "/createServer" || chatBoxInputField.text == "/c") {NetworkManager.instance.GUIStartServer();}
-				else if(chatBoxInputField.text == "/disconnect" || chatBoxInputField.text == "/d"){NetworkManager.instance.GUILeaveServer();}
-				else if(splitArray.Length > 1){
-					string ipAdress = splitArray[1];
-					string port = splitArray[2];
-					if(chatBoxInputField.text == "/join " + ipAdress + " " + port || chatBoxInputField.text == "/j " + ipAdress + " " + port){
-						IPJoinInputField.text = ipAdress;
-						portJoinInputField.text = port;
-					}
-
-					NetworkManager.instance.GUIJoinServer();
-				}
-				else{StartCoroutine(SendMessage("PLAYER", chatBoxInputField.text));}
-
+				StartCoroutine(SendMessage(playerNameInputField.text, chatBoxInputField.text));
 			}
+
 			chatBoxInputField.text = "";
 			chatBoxInputField.DeactivateInputField();
 			colorBlock.colorMultiplier = 1;
