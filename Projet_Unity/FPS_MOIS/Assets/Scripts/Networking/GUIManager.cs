@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Collections;
@@ -13,12 +13,15 @@ public class GUIManager : MonoBehaviour {
 	RectTransform chatBoxRectTransform;
 	public Scrollbar chatBoxScrollBar;
 	public InputField chatBoxInputField;
+	public GameObject connectedPlayers;
+	Text connectedPlayersText;
+	RectTransform connectedPlayersRectTransform;
+	public Scrollbar connectedPlayersScrollBar;
 	public InputField portCreateInputField;
 	public InputField IPJoinInputField;
 	public InputField portJoinInputField;
-	public GameObject hostButton;
+	public InputField roomName;
 	public string info = "INFO";
-	//public List<GameObject> hostButtonList = new List<GameObject>();
 
 	bool isChatActive = false;
 	public bool isRunning = false;
@@ -44,8 +47,24 @@ public class GUIManager : MonoBehaviour {
 		chatBoxScrollBar.value = 0;
 	}
 
+	// Refresh connectedPlayers
+	public IEnumerator RefreshConnectedPlayers(){
+		
+		foreach(NetworkPlayer p in Network.connections){
+			Vector2 connectedPlayersSize = connectedPlayersRectTransform.sizeDelta;
+			connectedPlayersText.text += p.ipAddress;
+			connectedPlayersSize.y += (connectedPlayersText.lineSpacing*2 + connectedPlayersText.fontSize);
+			connectedPlayersRectTransform.sizeDelta = connectedPlayersSize;
+		}
+
+		yield return new WaitForEndOfFrame();
+		connectedPlayersScrollBar.value = 0;
+		yield return new WaitForSeconds(1);
+		StartCoroutine(RefreshConnectedPlayers());
+	}
+
 	IEnumerator ServerRunning(){
-		bool isSameState = isRunning;
+		bool previousState = isRunning;
 		Process[] isServerRunning = System.Diagnostics.Process.GetProcessesByName("MasterServer");
 
 		if(isServerRunning.Length == 0){
@@ -53,22 +72,18 @@ public class GUIManager : MonoBehaviour {
 		}else{
 			isRunning = true;
 		}
-		if(isSameState == true && isRunning == false) StartCoroutine(SendMessage(info, "MasterServer is not running. You can't create a server."));
-		if(isSameState == false && isRunning == true) StartCoroutine(SendMessage(info, "You can now create a server or join an existing one."));
+		if(previousState == true && isRunning == false && !Network.isServer){
+			StartCoroutine(SendMessage(info, "MasterServer is not running. You can't create a server."));
+		} 
+		if(previousState == true && isRunning == false && Network.isServer){
+			StartCoroutine(SendMessage(info, "MasterServer is not running anymore !"));
+			NetworkManager.instance.GUILeaveServer();
+		} 
+		if(previousState == false && isRunning == true) StartCoroutine(SendMessage(info, "Create a server or join an existing one."));
 		yield return new WaitForSeconds(1);
 		StartCoroutine(ServerRunning());
 	}
 
-//	public void CreateButton(string buttonText, string _ip){
-//		GameObject button = Instantiate(hostButton, Vector3.zero, Quaternion.identity) as GameObject;
-//		button.transform.SetParent(canvas.transform);
-//		RectTransform buttonTransform = button.GetComponent<RectTransform>();
-//		float positionY = -hostButtonList.Count * buttonTransform.sizeDelta.y -160f;
-//		buttonTransform.position = new Vector3(10, Screen.height + positionY, 0);
-//		button.GetComponentInChildren<Text>().text = buttonText;
-//		button.GetComponent<ButtonScript>().ip = _ip;
-//		hostButtonList.Add(button);
-//	}
 
 	void Start () {
 		chatBoxRectTransform = chatBox.GetComponent<RectTransform>();
@@ -76,7 +91,7 @@ public class GUIManager : MonoBehaviour {
 		StartCoroutine(SendMessage(info, "Your IP adress is " + Network.player.ipAddress));
 		StartCoroutine(ServerRunning());
 		if(!isRunning){
-			StartCoroutine(SendMessage(info, "MasterServer is not running. You can't create a server."));
+			StartCoroutine(SendMessage(info, "MasterServer is not running. Can't create a server."));
 		}
 	}
 
@@ -98,7 +113,6 @@ public class GUIManager : MonoBehaviour {
 
 				if(chatBoxInputField.text == "/createServer" || chatBoxInputField.text == "/c") {NetworkManager.instance.GUIStartServer();}
 				else if(chatBoxInputField.text == "/disconnect" || chatBoxInputField.text == "/d"){NetworkManager.instance.GUILeaveServer();}
-				//else if(chatBoxInputField.text == "/refresh" || chatBoxInputField.text == "/r"){NetworkManager.instance.GUIRefreshHostList();}
 				else if(splitArray.Length > 1){
 					string ipAdress = splitArray[1];
 					string port = splitArray[2];
