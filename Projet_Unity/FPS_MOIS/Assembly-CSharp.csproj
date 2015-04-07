@@ -50,8 +50,6 @@
      <Compile Include="Assets\Scripts\Networking\CharaController.cs" />
      <Compile Include="Assets\Scripts\Networking\Local\GUIManagerLocal.cs" />
      <Compile Include="Assets\Scripts\Networking\Local\NetworkManagerLocal.cs" />
-     <Compile Include="Assets\Scripts\Networking\Online\GUIManagerOnline.cs" />
-     <Compile Include="Assets\Scripts\Networking\Online\NetworkManagerOnline.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
