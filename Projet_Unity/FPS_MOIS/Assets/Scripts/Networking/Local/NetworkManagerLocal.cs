@@ -2,11 +2,13 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class NetworkManagerLocal : MonoBehaviour {
 
 	public int maxPlayers = 4;
 	public List<string> playerList = new List<string>();
+	List<string> previousConnectedPlayers = new List<string>();
 
 	[Header("Server messages")]
 	public string info = "INFO";
@@ -182,9 +184,13 @@ public class NetworkManagerLocal : MonoBehaviour {
 		Vector2 connectedPlayersSize = guiManagerLocal.connectedPlayersRectTransform.sizeDelta;
 		Text cpt = guiManagerLocal.connectedPlayersText;
 		RectTransform cprt = guiManagerLocal.connectedPlayersRectTransform;
-		
+		List<string> disconnectedPlayers;
+		List<string> connectedPlayers;
+		//reset du texte
 		cpt.text = "Connected players :" + "\n\r" + "\n\r";
+		//envoie de ma connexion au serveur
 		nView.RPC("AddPlayerInfo", RPCMode.All, playerName);
+
 		playerList.Sort();
 
 		foreach(string s in playerList){
@@ -195,6 +201,20 @@ public class NetworkManagerLocal : MonoBehaviour {
 		connectedPlayersSize.y = (cpt.lineSpacing*2 + cpt.fontSize)*(playerList.Count+2);
 		cprt.sizeDelta = connectedPlayersSize;
 
+
+		disconnectedPlayers = previousConnectedPlayers.Except(playerList).ToList();
+		connectedPlayers = playerList.Except(previousConnectedPlayers).ToList();
+	
+
+		foreach(string s in disconnectedPlayers){
+			SendDebugMessageInChat(info, s + " disconnected");
+		}
+
+		foreach(string s in connectedPlayers){
+			SendDebugMessageInChat(info,  s + " connected");
+		}
+
+		previousConnectedPlayers = playerList;
 		playerList.Clear();
 
 		yield return new WaitForSeconds(1);
