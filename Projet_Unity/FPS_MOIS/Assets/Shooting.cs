@@ -57,7 +57,7 @@ public class Shooting : MonoBehaviour {
                 if (hit.transform.gameObject.layer == LayerMask.NameToLayer("Joueur"))
                 {
                     Debug.Log("pan");
-                    hit.transform.gameObject.GetComponent<Shooting>.vie = (hit.transform.gameObject.GetComponent<Shooting>.vie -
+                    //hit.transform.gameObject.GetComponent<Shooting>.vie = (hit.transform.gameObject.GetComponent<Shooting>.vie -
                 }
             }
 
