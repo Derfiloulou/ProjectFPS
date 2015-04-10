@@ -8,6 +8,8 @@ public struct ShotLevel {
     public int shotStrength;
     public int availableBullets;
     public int bulletsPerSecond;
+    public Color c1;
+    public Color c2;
 
 
 }
@@ -19,8 +21,6 @@ public class Shooting : MonoBehaviour {
     private int shotcount = 0;
     public List<ShotLevel> shotLevels;
     private float lastShot = 0;
-    private Color c1 = Color.red;
-    private Color c2 = Color.blue;
     private LineRenderer lr;
     private Vector3 origin;
 
@@ -28,10 +28,9 @@ public class Shooting : MonoBehaviour {
 	void Start () {
         lr = gameObject.AddComponent<LineRenderer>() as LineRenderer;
         lr.material = new Material(Shader.Find("Particles/Additive"));
-        lr.SetColors(c1, c2);
-        lr.SetWidth(0.2F, 0.2F);
+        lr.SetWidth(0.2F, 0.5F);
         lr.SetVertexCount(2);
-
+        lr.enabled = false;
 	
 	}
 	
@@ -44,12 +43,14 @@ public class Shooting : MonoBehaviour {
             {
                 lastShot = Time.time;
                 shotcount++;
+                lr.SetColors(GetCurrentShotLevel().c1, GetCurrentShotLevel().c2);
                 Ray ray = GetComponent<Camera>().ViewportPointToRay(new Vector3(0.5F, 0.5F, 0));
                 RaycastHit hit;
 
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
-                    origin = transform.position;
+                    lr.enabled = true;
+                    origin = GameObject.Find("lrstart").transform.position;
                     lr.SetPosition(0, origin);
 
                     if (impact != null)
@@ -61,16 +62,15 @@ public class Shooting : MonoBehaviour {
                     }
                     if (hit.transform.tag == "Joueur")
                     {
-                        Debug.Log("Touché !");
                         hit.transform.gameObject.GetComponent<Etat>().vie -= GetCurrentShotLevel().shotStrength;
-                    }
-
-                    if (Input.GetKeyDown(KeyCode.Mouse0))
-                    {
-                        lr.SetPosition(0,origin);
                     }
                 }
             }
+        }
+
+        if (Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            lr.enabled = false;
         }
 	}
 
