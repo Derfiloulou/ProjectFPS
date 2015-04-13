@@ -35,6 +35,7 @@ public class GUIManagerLocal : MonoBehaviour {
 	[HideInInspector]
 	public RectTransform connectedPlayersRectTransform;
 	public Scrollbar connectedPlayersScrollBar;
+	string textInChatBox;
 	
 
 	bool isChatActive = false;
@@ -68,6 +69,10 @@ public class GUIManagerLocal : MonoBehaviour {
 		disconnectServerButton.interactable = isInteractable;
 	}
 
+	IEnumerator resetChatScrollBar(){
+		yield return new WaitForEndOfFrame();
+		chatBoxScrollBar.value = 0;
+	}
 
 	void Start () {
 		chatBoxRectTransform = chatBox.GetComponent<RectTransform>();
@@ -89,7 +94,7 @@ public class GUIManagerLocal : MonoBehaviour {
 		}
 		if((Input.GetKeyDown(KeyCode.Return) && isChatActive == true)  || chatBoxInputField.isFocused == false){
 
-			if(chatBoxInputField.text != ""){
+			if((Network.isServer || Network.isClient) && chatBoxInputField.text != ""){
 				NetworkManagerLocal.instance.nView.RPC("SendMessageInChat", RPCMode.All, NetworkManagerLocal.instance.playerName, chatBoxInputField.text);
 			}
 
@@ -98,6 +103,12 @@ public class GUIManagerLocal : MonoBehaviour {
 			colorBlock.colorMultiplier = 1;
 			chatBoxInputField.colors = colorBlock;
 			isChatActive = false;
+
 		}
+
+		if(chatBoxText.text != textInChatBox){
+			StartCoroutine(resetChatScrollBar());
+		}
+		textInChatBox = chatBoxText.text;
 	}
 }

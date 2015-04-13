@@ -1,10 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\Local\GUIManagerLocal.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\Local\NetworkManagerLocal.cs">
     <Files>
-      <File FileName="Assets\Scripts\Networking\Local\GUIManagerLocal.cs" Line="74" Column="31" />
-      <File FileName="Assets\Scripts\Networking\Local\NetworkManagerLocal.cs" Line="154" Column="28" />
-      <File FileName="Assets\Scripts\Networking\CharaController.cs" Line="23" Column="40" />
+      <File FileName="Assets\Scripts\Networking\Local\NetworkManagerLocal.cs" Line="263" Column="61" />
+      <File FileName="Assets\Scripts\Networking\Local\GUIManagerLocal.cs" Line="97" Column="47" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
