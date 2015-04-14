@@ -18,6 +18,8 @@ public class NetworkManagerLocal : MonoBehaviour {
 	[Header("Server Parameters")]
 	public int maxPlayers = 4;
 	public float refreshPlayerListRate = 1;
+	public int minPlayersToLaunch = 2;
+	public string gameSceneName;
 
 	[Header("Game Objects")]
 	public GameObject player;
@@ -29,7 +31,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 	[HideInInspector]
 	public NetworkView nView;
 	[HideInInspector]
-	public string playerName;
+	public static string playerName;
 	string talkingPlayer;
 	[HideInInspector]
 	public AudioSource audioSource;
@@ -47,7 +49,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 	
 	void Awake () {
 		if(mInst == null) mInst = this;
-		DontDestroyOnLoad(this); 
+		//DontDestroyOnLoad(this); 
 		guiManagerLocal = GUIManagerLocal.instance;
 	}
 
@@ -88,6 +90,14 @@ public class NetworkManagerLocal : MonoBehaviour {
 			LeaveServer();
 		}
 	}
+
+	// Lancer le jeu
+	public void GUIStartGame(){
+		if (Network.isServer)
+		{
+			nView.RPC("StartGame", RPCMode.All);
+		}
+	}
 	
 	// ========================= Fonctions du serveur =========================
 
@@ -123,6 +133,8 @@ public class NetworkManagerLocal : MonoBehaviour {
 		int _port;
 		bool isNumericPort = int.TryParse(guiManagerLocal.portJoinInputField.text, out _port);
 		string[] ipCheck =_ip.Split('.');
+
+
 
 		// Vérification de l'ip (000.000.000.000)
 		if(ipCheck.Length == 4){
@@ -210,6 +222,19 @@ public class NetworkManagerLocal : MonoBehaviour {
 		guiManagerLocal.connectedPlayersText.text = "";
 	}
 
+	void OnPlayerConnected(NetworkPlayer nPlayer){
+		playerList.Add(new PlayerInfo(nPlayer,  "", 0));
+	}
+
+	void OnPlayerDisconnected(NetworkPlayer nPlayer){
+		for (int i=0; i<playerList.Count; i++) {
+			if(playerList[i].netPlayer == nPlayer){
+				playerList.Remove(playerList[i]);
+				pingList.Remove(pingList[i]);
+			}
+		}
+	}
+
 
 	public IEnumerator RefreshConnectedPlayers(){
 		
@@ -234,7 +259,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 			}
 
 			cpt.text = guiManagerLocal.serverNameInputField.text + " (" + playerList.Count + "/" + maxPlayers + ")" +"\n\r" + "\n\r";
-			cpt.text += "IP ADDRESS" + "\t\t" + "PING" + "\t\t" + "PLAYER NAME" +"\n\r";
+			cpt.text += "IP ADDRESS" + "\t\t\t" + "PING" + "\t\t" + "PLAYER NAME" +"\n\r";
 			foreach(PlayerInfo i in playerList){
 				cpt.text += i.netPlayer.ipAddress + "\t\t\t" + i.playerPing + " ms \t\t"  + i.playerName + "\n\r";
 			}
@@ -261,6 +286,12 @@ public class NetworkManagerLocal : MonoBehaviour {
 		cbt.text += "<" + source + "> : " + message + "\n\r";
 		chatboxSize.y += (cbt.lineSpacing*2 + cbt.fontSize);
 		cbrt.sizeDelta = chatboxSize;
+		StartCoroutine(guiManagerLocal.resetChatScrollBar());
+	}
+
+	[RPC]
+	void StartGame(){
+		Application.LoadLevel (gameSceneName);
 	}
 
 	// ========================= RPCs =========================

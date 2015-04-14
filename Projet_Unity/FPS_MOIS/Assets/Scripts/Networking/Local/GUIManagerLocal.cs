@@ -43,6 +43,10 @@ public class GUIManagerLocal : MonoBehaviour {
 	public RectTransform connectedPlayersRectTransform;
 	public Scrollbar connectedPlayersScrollBar;
 
+	[Header("Start Game")]
+	public Button startGameButton;
+
+
 	// Other
 	bool isChatActive = false;
 
@@ -52,7 +56,7 @@ public class GUIManagerLocal : MonoBehaviour {
 
 	void Awake () {
 		if(mInst == null) mInst = this;
-		DontDestroyOnLoad(this); 		
+		//DontDestroyOnLoad(this); 		
 	}
 
 
@@ -157,9 +161,14 @@ public class GUIManagerLocal : MonoBehaviour {
 			// Si le chat n'est pas actif
 			if (Input.GetKeyDown (KeyCode.Return)) {
 				if (chatBoxInputField.text != "")
-					NetworkManagerLocal.instance.nView.RPC ("SendMessageInChat", RPCMode.All, NetworkManagerLocal.instance.playerName, chatBoxInputField.text);
+					NetworkManagerLocal.instance.nView.RPC ("SendMessageInChat", RPCMode.All, NetworkManagerLocal.playerName, chatBoxInputField.text);
 				ChangeChatBoxState ();
 			}
 		}
+
+		if (Network.isServer && NetworkManagerLocal.instance != null && NetworkManagerLocal.instance.playerList.Count >= NetworkManagerLocal.instance.minPlayersToLaunch)
+			startGameButton.interactable = true;
+		else
+			startGameButton.interactable = false;
 	}
 }

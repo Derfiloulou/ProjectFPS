@@ -2,23 +2,43 @@ Initialize engine version: 5.0.0f4 (5b98b70ebeb9)
 GfxDevice: creating device client; threaded=1
 Direct3D:
     Version:  Direct3D 11.0 [level 11.0]
-    Renderer: NVIDIA GeForce GTX 660M (ID=0xfd4)
-    Vendor:   NVIDIA
-    VRAM:     1990 MB
+    Renderer: Intel(R) HD Graphics 4000 (ID=0x166)
+    Vendor:   Intel
+    VRAM:     128 MB
 Begin MonoManager ReloadAssembly
-Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll (this message is harmless)
-Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll into Unity Child Domain
-Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll (this message is harmless)
-Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
-Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
-Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-- Completed reload, in  0.072 seconds
-desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
+Platform assembly: C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+- Completed reload, in  0.064 seconds
+desktop: 1920x1080 59Hz; virtual: 3600x1395 at -1680,-315
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
-Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
+Platform assembly: C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\msi\Desktop\Projets Unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
 Setting up 2 worker threads for Enlighten.
-  Thread -> id: 47fc -> priority: 1 
-  Thread -> id: 4c7c -> priority: 1 
+  Thread -> id: 53d0 -> priority: 1 
+  Thread -> id: 2160 -> priority: 1 
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 6.144849 ms
+
+Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 165.
+Total: 0.378837 ms (FindLiveObjects: 0.031681 ms CreateObjectMapping: 0.009370 ms MarkObjects: 0.316813 ms  DeleteObjects: 0.018741 ms)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at PlayerNetworking.OnSerializeNetworkView (UnityEngine.BitStream stream, NetworkMessageInfo info) [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+NullReferenceException: Object reference not set to an instance of an object
+  at PlayerNetworking.OnSerializeNetworkView (UnityEngine.BitStream stream, NetworkMessageInfo info) [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+The server has disconnected from the client. Most likely the server has shut down.
+ 
+(Filename:  Line: 754)
+
