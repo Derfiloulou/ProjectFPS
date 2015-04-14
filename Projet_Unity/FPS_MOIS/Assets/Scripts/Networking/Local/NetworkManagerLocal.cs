@@ -9,12 +9,18 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public class NetworkManagerLocal : MonoBehaviour {
 
-	public int maxPlayers = 4;
 	public List<PlayerInfo> playerList = new List<PlayerInfo>();
 	List<Ping> pingList = new List<Ping>();
 	PlayerInfo myInfos;
 	string serverBoxText;
-	int playerNumber;
+	int connectedPlayers;
+
+	[Header("Server Parameters")]
+	public int maxPlayers = 4;
+	public float refreshPlayerListRate = 1;
+
+	[Header("Game Objects")]
+	public GameObject player;
 
 	[Header("Server messages")]
 	public string info = "INFO";
@@ -49,15 +55,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 		nView = GetComponent<NetworkView> ();
 		audioSource = GetComponent<AudioSource>();
 	}
-	
-	// ========================= Fonctions GUI =========================
 
-	public void GUIState(bool isConnected){
-		guiManagerLocal.PlayerNameState(!isConnected);
-		guiManagerLocal.CreateServerState(!isConnected);
-		guiManagerLocal.JoinServerState(!isConnected);
-		guiManagerLocal.DisconnectState(isConnected);
-	}
 
 	// Demarrage du serveur GUI
 	public void GUIStartServer(){
@@ -98,13 +96,22 @@ public class NetworkManagerLocal : MonoBehaviour {
 	public void StartServer()
 	{
 		string serverPort = guiManagerLocal.portCreateInputField.text;
+		int _port;
+		bool isNumericPort;
 
 		// Si aucune port n'est rentré, alors port 25000 par défaut
-		if(guiManagerLocal.portCreateInputField.text == "") serverPort = "25000";
+		if(guiManagerLocal.portCreateInputField.text == "") 
+			serverPort = "25000";
 
+		isNumericPort = int.TryParse(serverPort, out _port);
 
-		// Initialize server
-		Network.InitializeServer(maxPlayers, int.Parse(serverPort), !Network.HavePublicAddress());
+		if (!isNumericPort) {
+			SendDebugMessageInChat (error, "Enter a valid port !"); 
+			audioSource.PlayOneShot (errorSound);
+		} 
+
+		else 
+			Network.InitializeServer(maxPlayers, int.Parse(serverPort), !Network.HavePublicAddress());
 	}
 	
 	
@@ -150,8 +157,6 @@ public class NetworkManagerLocal : MonoBehaviour {
 
 	public void LeaveServer(){
 		Network.Disconnect();
-		StopAllCoroutines();
-		guiManagerLocal.connectedPlayers.GetComponent<Text>().text = "";
 	}
 
 	void OnFailedToConnect(NetworkConnectionError errorMessage){
@@ -166,7 +171,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 		playerName = guiManagerLocal.playerNameInputField.text;
 		playerList.Add(new PlayerInfo(Network.player, playerName, 0));
 		StartCoroutine(RefreshConnectedPlayers());
-		GUIState(true);
+		guiManagerLocal.GUIState(true);
 
 	}
 
@@ -178,10 +183,11 @@ public class NetworkManagerLocal : MonoBehaviour {
 		playerName = guiManagerLocal.playerNameInputField.text;
 		nView.RPC("AddPlayerName", RPCMode.Server, Network.player.guid, playerName);
 		StartCoroutine(RefreshConnectedPlayers());
-		GUIState(true);
+		guiManagerLocal.GUIState(true);
 	}
 
 	void OnDisconnectedFromServer(NetworkDisconnection message){
+
 		// Fermeture du serveur
 		if (Network.isServer){
 			SendDebugMessageInChat(info, "Local server connection disconnected.");
@@ -197,30 +203,67 @@ public class NetworkManagerLocal : MonoBehaviour {
 			SendDebugMessageInChat(info, "Disconnected from the server");
 			audioSource.PlayOneShot(disconnectedSound);
 		}
+
 		StopAllCoroutines();
-		guiManagerLocal.connectedPlayers.GetComponent<Text>().text = "";
-		GUIState(false);
 		playerList.Clear();
-
+		guiManagerLocal.GUIState(false);
+		guiManagerLocal.connectedPlayersText.text = "";
 	}
 
-	void OnPlayerConnected(NetworkPlayer nplayer)
-	{
-		playerList.Add(new PlayerInfo(nplayer, "", 0));
-	}
-	
-	void OnPlayerDisconnected(NetworkPlayer nplayer)
-	{
-		for(int i=0; i<playerList.Count; i++){
-			if(playerList[i].netPlayer == nplayer){
-				playerList.Remove(playerList[i]);
-				pingList.Remove(pingList[i]);
+
+	public IEnumerator RefreshConnectedPlayers(){
+		
+		Vector2 connectedPlayersSize = guiManagerLocal.connectedPlayersRectTransform.sizeDelta;
+		Text cpt = guiManagerLocal.connectedPlayersText;
+		RectTransform cprt = guiManagerLocal.connectedPlayersRectTransform;
+
+		// Gestion de la liste des joueurs et du ping par le serveur
+		if(Network.isServer){
+
+			for(int i=0 ; i<pingList.Count; i++){
+				if(pingList[i].isDone){
+					playerList[i].playerPing = pingList[i].time;
+				}
 			}
+			
+			pingList.Clear();
+
+			foreach(PlayerInfo i in playerList){
+				Ping ping = new Ping(i.netPlayer.ipAddress);
+				pingList.Add(ping);
+			}
+
+			cpt.text = guiManagerLocal.serverNameInputField.text + " (" + playerList.Count + "/" + maxPlayers + ")" +"\n\r" + "\n\r";
+			cpt.text += "IP ADDRESS" + "\t\t" + "PING" + "\t\t" + "PLAYER NAME" +"\n\r";
+			foreach(PlayerInfo i in playerList){
+				cpt.text += i.netPlayer.ipAddress + "\t\t\t" + i.playerPing + " ms \t\t"  + i.playerName + "\n\r";
+			}
+			nView.RPC("SendPlayerList", RPCMode.All, cpt.text, playerList.Count);
 		}
 		
+		// taille d'une ligne (ecart + taille font) multplié par nombre de ligne (nombre de joueurs + 4 lignes fixes)
+		connectedPlayersSize.y = (cpt.lineSpacing*2 + cpt.fontSize)*(connectedPlayers+4);
+		cprt.sizeDelta = connectedPlayersSize;
+		
+		// refresh rate
+		yield return new WaitForSeconds(refreshPlayerListRate);
+		StartCoroutine(RefreshConnectedPlayers());
+	}
+	
+	
+	// Envoie un debug message dans la chatBox
+	public void SendDebugMessageInChat(string source, string message){
+		
+		Vector2 chatboxSize = guiManagerLocal.chatBoxRectTransform.sizeDelta;
+		Text cbt = guiManagerLocal.chatBoxText;
+		RectTransform cbrt = guiManagerLocal.chatBoxRectTransform;
+		
+		cbt.text += "<" + source + "> : " + message + "\n\r";
+		chatboxSize.y += (cbt.lineSpacing*2 + cbt.fontSize);
+		cbrt.sizeDelta = chatboxSize;
 	}
 
-	// ========================= Network View =========================
+	// ========================= RPCs =========================
 
 	[RPC]
 	public void AddPlayerName(string guid, string name){
@@ -232,68 +275,15 @@ public class NetworkManagerLocal : MonoBehaviour {
 	}
 
 	[RPC]
-	public void SendPlayerList(string serverBoxText, int _playerNumber){
+	public void SendPlayerList(string serverBoxText, int _connectedPlayers){
 		guiManagerLocal.connectedPlayersText.text = serverBoxText;
-		playerNumber = _playerNumber;
+		connectedPlayers = _connectedPlayers;
 	}
 
 
-	public IEnumerator RefreshConnectedPlayers(){
 
-		Vector2 connectedPlayersSize = guiManagerLocal.connectedPlayersRectTransform.sizeDelta;
-		Text cpt = guiManagerLocal.connectedPlayersText;
-		RectTransform cprt = guiManagerLocal.connectedPlayersRectTransform;
-
-		for(int i=0 ; i<pingList.Count; i++){
-			if(pingList[i].isDone){
-				playerList[i].playerPing = pingList[i].time;
-			}
-		}
-
-		pingList.Clear();
-
-		if(Network.isServer){
-			foreach(PlayerInfo i in playerList){
-				Ping ping = new Ping(i.netPlayer.ipAddress);
-				pingList.Add(ping);
-			}
-		}
-
-		if(Network.isServer){
-			cpt.text = guiManagerLocal.serverNameInputField.text + " (" + playerList.Count + "/" + maxPlayers + ")" +"\n\r" + "\n\r";
-			cpt.text += "IP ADDRESS" + "\t\t" + "PING" + "\t\t" + "PLAYER NAME" +"\n\r";
-			foreach(PlayerInfo i in playerList){
-				cpt.text += i.netPlayer.ipAddress + "\t\t\t" + i.playerPing + " ms \t\t"  + i.playerName + "\n\r";
-			}
-			nView.RPC("SendPlayerList", RPCMode.All, cpt.text, playerList.Count);
-		}
-		
-		// taille d'une ligne (ecart + taille font) multplié par nombre de ligne (nombre de connexions) + premiere ligne + nom du joueur
-		connectedPlayersSize.y = (cpt.lineSpacing*2 + cpt.fontSize)*(playerNumber+4);
-		cprt.sizeDelta = connectedPlayersSize;
-
-
-		yield return new WaitForSeconds(1);
-		StartCoroutine(RefreshConnectedPlayers());
-	}
-
-
-	// Envoie un debug message dans la chatBox
-	public void SendDebugMessageInChat(string source, string message){
-		
-		Vector2 chatboxSize = guiManagerLocal.chatBoxRectTransform.sizeDelta;
-		Text cbt = guiManagerLocal.chatBoxText;
-		RectTransform cbrt = guiManagerLocal.chatBoxRectTransform;
-
-		cbt.text += "<" + source + "> : " + message + "\n\r";
-		chatboxSize.y += (cbt.lineSpacing*2 + cbt.fontSize);
-		cbrt.sizeDelta = chatboxSize;
-		//guiManagerLocal.chatBoxScrollBar.value = 0;
-	}
 
 	// Envoie un message dans le chat
-
-
 	[RPC]
 	public void SendMessageInChat(string name, string message){
 		
@@ -304,12 +294,7 @@ public class NetworkManagerLocal : MonoBehaviour {
 		cbt.text += "<" + name + "> : " + message + "\n\r";
 		chatboxSize.y += (cbt.lineSpacing*2 + cbt.fontSize);
 		cbrt.sizeDelta = chatboxSize;
-		//guiManagerLocal.chatBoxScrollBar.value = 0;
-	}
-
-	void Update(){
-
-
+		StartCoroutine(guiManagerLocal.resetChatScrollBar());
 	}
 }
 

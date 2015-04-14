@@ -46,8 +46,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\LaserBeam.cs" />
-     <Compile Include="Assets\Scripts\Networking\CharaController.cs" />
+     <Compile Include="Assets\Scripts\Networking\InGame\PlayerNetworking.cs" />
      <Compile Include="Assets\Scripts\Networking\Local\GUIManagerLocal.cs" />
      <Compile Include="Assets\Scripts\Networking\Local\NetworkManagerLocal.cs" />
  <Reference Include="UnityEngine.UI">
