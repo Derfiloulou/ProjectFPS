@@ -12,7 +12,74 @@ Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity
 Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
 Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
 Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
-- Completed reload, in  0.069 seconds
+- Completed reload, in  0.109 seconds
+desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+<RI> Initialized touch support.
+Initialize engine version: 5.0.0f4 (5b98b70ebeb9)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GTX 660M (ID=0xfd4)
+    Vendor:   NVIDIA
+    VRAM:     1990 MB
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+- Completed reload, in  0.044 seconds
+desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
+<RI> Initialized touch support.
+Setting up 2 worker threads for Enlighten.
+  Thread -> id: 374c -> priority: 1 
+  Thread -> id: 13d0 -> priority: 1 
+Initialize engine version: 5.0.0f4 (5b98b70ebeb9)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GTX 660M (ID=0xfd4)
+    Vendor:   NVIDIA
+    VRAM:     1990 MB
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+- Completed reload, in  0.047 seconds
+desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
+<RI> Initialized touch support.
+Setting up 2 worker threads for Enlighten.
+  Thread -> id: 3658 -> priority: 1 
+  Thread -> id: 29f4 -> priority: 1 
+Initialize engine version: 5.0.0f4 (5b98b70ebeb9)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: NVIDIA GeForce GTX 660M (ID=0xfd4)
+    Vendor:   NVIDIA
+    VRAM:     1990 MB
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+- Completed reload, in  0.048 seconds
 desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
@@ -20,11 +87,10 @@ desktop: 1600x900 60Hz; virtual: 1600x900 at 0,0
 Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
 Setting up 2 worker threads for Enlighten.
-  Thread -> id: 7a28 -> priority: 1 
-  Thread -> id: 6e04 -> priority: 1 
-Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 3.939681 ms
-
-Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 165.
-Total: 0.290935 ms (FindLiveObjects: 0.018741 ms CreateObjectMapping: 0.019187 ms MarkObjects: 0.245867 ms  DeleteObjects: 0.005800 ms)
-
+  Thread -> id: 527c -> priority: 1 
+  Thread -> id: 3eec -> priority: 1 
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\sig4gp\Desktop\Projets unity\ProjectFPS\Projet_Unity\Builds\NetworkingTest_Data\Managed\System.dll (this message is harmless)
+Setting up 2 worker threads for Enlighten.
+  Thread -> id: 4294 -> priority: 1 
+  Thread -> id: 4a48 -> priority: 1 

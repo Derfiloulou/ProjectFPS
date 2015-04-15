@@ -219,7 +219,6 @@ public class NetworkManagerLocal : MonoBehaviour {
 		StopAllCoroutines();
 		playerList.Clear();
 		guiManagerLocal.GUIState(false);
-		guiManagerLocal.connectedPlayersText.text = "";
 	}
 
 	void OnPlayerConnected(NetworkPlayer nPlayer){
