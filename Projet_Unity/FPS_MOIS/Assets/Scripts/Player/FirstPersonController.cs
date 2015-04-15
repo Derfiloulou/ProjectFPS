@@ -8,13 +8,19 @@ using System.Collections;
 [RequireComponent (typeof (CharacterController))]
 public class FirstPersonController: MonoBehaviour
 {
-	NetworkView nView;
 	Rigidbody playerRigidbody;
+	Transform playerTransform;
+	NetworkView nView;
+	Transform cameraTransform;
 	float lastSynchronizationTime = 0f;
 	float syncDelay = 0f;
 	float syncTime = 0f;
 	Vector3 syncStartPosition = Vector3.zero;
+	Quaternion syncStartRotation= Quaternion.identity;
+	Quaternion syncStartCamera= Quaternion.identity;
 	Vector3 syncEndPosition = Vector3.zero;
+	Quaternion syncEndRotation= Quaternion.identity;
+	Quaternion syncEndCamera= Quaternion.identity;
 
     public float walkSpeed = 6.0f;
     public float runSpeed = 10.0f;
@@ -60,17 +66,28 @@ public class FirstPersonController: MonoBehaviour
     private Vector3 contactPoint;
     private bool playerControl = false;
     private int jumpTimer;
+
+	public Material materialDebug;
  
     void Start()
     {
-		nView = GetComponent<NetworkView>();
-		playerRigidbody = GetComponent<Rigidbody>();
-        controller = GetComponent<CharacterController>();
-        myTransform = transform;
+		nView = GetComponent<NetworkView> ();
+		playerTransform = GetComponent<Transform> ();
+		playerRigidbody = GetComponent<Rigidbody> ();
+		cameraTransform = GetComponentInChildren<Camera>().transform;
+		controller = GetComponent<CharacterController>();
+
         speed = walkSpeed;
         rayDistance = controller.height * .5f + controller.radius;
         slideLimit = controller.slopeLimit - .1f;
         jumpTimer = antiBunnyHopFactor;
+		if(nView.isMine){
+			GetComponentInChildren<Camera>().enabled = true;
+			if(Network.isServer)
+				GetComponent<Renderer>().material = materialDebug;
+		}else{
+			GetComponentInChildren<Camera>().enabled = false;
+		}
     }
 
 	void MovePlayer(){
@@ -83,7 +100,7 @@ public class FirstPersonController: MonoBehaviour
 			bool sliding = false;
 			// See if surface immediately below should be slid down. We use this normally rather than a ControllerColliderHit point,
 			// because that interferes with step climbing amongst other annoyances
-			if (Physics.Raycast(myTransform.position, -Vector3.up, out hit, rayDistance)) {
+			if (Physics.Raycast(playerTransform.position, -Vector3.up, out hit, rayDistance)) {
 				if (Vector3.Angle(hit.normal, Vector3.up) > slideLimit)
 					sliding = true;
 			}
@@ -98,8 +115,8 @@ public class FirstPersonController: MonoBehaviour
 			// If we were falling, and we fell a vertical distance greater than the threshold, run a falling damage routine
 			if (falling) {
 				falling = false;
-				if (myTransform.position.y < fallStartLevel - fallingDamageThreshold)
-					FallingDamageAlert (fallStartLevel - myTransform.position.y);
+				if (playerTransform.position.y < fallStartLevel - fallingDamageThreshold)
+					FallingDamageAlert (fallStartLevel - playerTransform.position.y);
 			}
 			
 			if( enableRunning )
@@ -118,7 +135,7 @@ public class FirstPersonController: MonoBehaviour
 			// Otherwise recalculate moveDirection directly from axes, adding a bit of -y to avoid bumping down inclines
 			else {
 				moveDirection = new Vector3(inputX * inputModifyFactor, -antiBumpFactor, inputY * inputModifyFactor);
-				moveDirection = myTransform.TransformDirection(moveDirection) * speed;
+				moveDirection = playerTransform.TransformDirection(moveDirection) * speed;
 				playerControl = true;
 			}
 			
@@ -134,14 +151,14 @@ public class FirstPersonController: MonoBehaviour
 			// If we stepped over a cliff or something, set the height at which we started falling
 			if (!falling) {
 				falling = true;
-				fallStartLevel = myTransform.position.y;
+				fallStartLevel = playerTransform.position.y;
 			}
 			
 			// If air control is allowed, check movement but don't touch the y component
 			if (airControl && playerControl) {
 				moveDirection.x = inputX * speed * inputModifyFactor;
 				moveDirection.z = inputY * speed * inputModifyFactor;
-				moveDirection = myTransform.TransformDirection(moveDirection);
+				moveDirection = playerTransform.TransformDirection(moveDirection);
 			}
 		}
 		
@@ -156,13 +173,18 @@ public class FirstPersonController: MonoBehaviour
 	{
 		syncTime += Time.deltaTime;
 		playerRigidbody.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+		playerRigidbody.rotation = Quaternion.Lerp(syncStartRotation, syncEndRotation, syncTime / syncDelay);
+		cameraTransform.rotation = Quaternion.Lerp(syncStartCamera, syncEndCamera, syncTime / syncDelay);
 	}
 
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
 	{
 		Vector3 syncPosition = Vector3.zero;
 		Vector3 syncVelocity = Vector3.zero;
-
+		Quaternion syncRotation = Quaternion.identity;
+		Quaternion syncCamera = Quaternion.identity;
+		
+		
 		if (stream.isWriting)
 		{
 			syncPosition = playerRigidbody.position;
@@ -170,18 +192,30 @@ public class FirstPersonController: MonoBehaviour
 			
 			syncVelocity = playerRigidbody.velocity;
 			stream.Serialize(ref syncVelocity);
+			
+			syncRotation = playerRigidbody.rotation;
+			stream.Serialize(ref syncRotation);
+			
+			syncCamera = cameraTransform.rotation;
+			stream.Serialize(ref syncCamera);
 		}
 		else
 		{
 			stream.Serialize(ref syncPosition);
 			stream.Serialize(ref syncVelocity);
+			stream.Serialize(ref syncRotation);
+			stream.Serialize(ref syncCamera);
 			
 			syncTime = 0f;
 			syncDelay = Time.time - lastSynchronizationTime;
 			lastSynchronizationTime = Time.time;
 			
 			syncEndPosition = syncPosition + syncVelocity * syncDelay;
+			syncEndRotation = syncRotation;
+			syncEndCamera = syncCamera;
 			syncStartPosition = playerRigidbody.position;
+			syncStartRotation = playerRigidbody.rotation;
+			syncStartCamera = cameraTransform.rotation;
 		}
 	}
  
