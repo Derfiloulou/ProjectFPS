@@ -21,9 +21,6 @@ public class NetworkManagerLocal : MonoBehaviour {
 	public int minPlayersToLaunch = 2;
 	public string gameSceneName;
 
-	[Header("Game Objects")]
-	public GameObject player;
-
 	[Header("Server messages")]
 	public string info = "INFO";
 	public string error = "ERROR";

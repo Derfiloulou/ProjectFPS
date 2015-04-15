@@ -102,7 +102,7 @@ public class GUIManagerLocal : MonoBehaviour {
 		CreateServerState(!isConnected);
 		JoinServerState(!isConnected);
 		DisconnectState(isConnected);
-		if(isConnected = false)
+		if(isConnected == false)
 			connectedPlayersText.text = "";
 	}
 
@@ -147,7 +147,10 @@ public class GUIManagerLocal : MonoBehaviour {
 		connectedPlayersText = connectedPlayers.GetComponent<Text>();
 		// Donne l'ip du joueur dans la chat box
 		NetworkManagerLocal.instance.SendDebugMessageInChat(NetworkManagerLocal.instance.info, "Your IP adress is " + Network.player.ipAddress);
-	}
+
+		IPJoinInputField.text = "127.0.0.1";
+		portJoinInputField.text = "25000";
+		}
 
 	void Update () {
 

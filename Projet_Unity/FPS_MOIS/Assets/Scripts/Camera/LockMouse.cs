@@ -5,8 +5,11 @@ using System.Collections;
 
 public class LockMouse : MonoBehaviour
 {	
+	CursorLockMode lockCursorMode;
+
 	void Start()
 	{
+		Cursor.lockState = lockCursorMode;
 		LockCursor(true);
 	}
 
@@ -21,12 +24,16 @@ public class LockMouse : MonoBehaviour
     	// unlock when escape is hit
         if  ( Input.GetKeyDown(KeyCode.Escape) )
         {
-        	LockCursor(!Screen.lockCursor);
+        	LockCursor(false);
         }
     }
     
     public void LockCursor(bool lockCursor)
     {
-    	Screen.lockCursor = lockCursor;
+		if(lockCursor == true)
+			lockCursorMode = CursorLockMode.Locked;
+		if(lockCursor == false)
+			lockCursorMode = CursorLockMode.None;
+		Cursor.visible = lockCursor;
     }
 }

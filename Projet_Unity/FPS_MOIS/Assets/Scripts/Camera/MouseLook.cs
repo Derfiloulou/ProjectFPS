@@ -13,6 +13,8 @@ using System.Collections.Generic;
 public class MouseLook : MonoBehaviour
 {
  
+	NetworkView nView;
+
 	public enum RotationAxes { MouseX = 1, MouseY = 2 }
 	public RotationAxes axes = RotationAxes.MouseX;
 	public bool invertY = false;
@@ -40,25 +42,29 @@ public class MouseLook : MonoBehaviour
 	Quaternion originalRotation;
 	
 	void Start ()
-	{			
-		if (GetComponent<Rigidbody>())
-		{
-			GetComponent<Rigidbody>().freezeRotation = true;
+	{		
+		nView = GetComponentInParent<NetworkView>();
+
+		if(nView.isMine){
+			if (GetComponent<Rigidbody>())
+			{
+				GetComponent<Rigidbody>().freezeRotation = true;
+			}
+			
+			originalRotation = transform.localRotation;
 		}
-		
-		originalRotation = transform.localRotation;
 	}
- 
-	void Update ()
-	{
+
+	void ApplyEffect(){
+
 		if (axes == RotationAxes.MouseX)
 		{			
 			rotAverageX = 0f;
- 
+			
 			rotationX += Input.GetAxis("Mouse X") * sensitivityX * Time.timeScale;
- 
+			
 			rotArrayX.Add(rotationX);
- 
+			
 			if (rotArrayX.Count >= framesOfSmoothing)
 			{
 				rotArrayX.RemoveAt(0);
@@ -69,25 +75,25 @@ public class MouseLook : MonoBehaviour
 			}
 			rotAverageX /= rotArrayX.Count;
 			rotAverageX = ClampAngle(rotAverageX, minimumX, maximumX);
- 
+			
 			Quaternion xQuaternion = Quaternion.AngleAxis (rotAverageX, Vector3.up);
 			transform.localRotation = originalRotation * xQuaternion;			
 		}
 		else
 		{			
 			rotAverageY = 0f;
- 
- 			float invertFlag = 1f;
- 			if( invertY )
- 			{
- 				invertFlag = -1f;
- 			}
+			
+			float invertFlag = 1f;
+			if( invertY )
+			{
+				invertFlag = -1f;
+			}
 			rotationY += Input.GetAxis("Mouse Y") * sensitivityY * invertFlag * Time.timeScale;
 			
 			rotationY = Mathf.Clamp(rotationY, minimumY, maximumY);
- 	
+			
 			rotArrayY.Add(rotationY);
- 
+			
 			if (rotArrayY.Count >= framesOfSmoothing)
 			{
 				rotArrayY.RemoveAt(0);
@@ -97,9 +103,16 @@ public class MouseLook : MonoBehaviour
 				rotAverageY += rotArrayY[j];
 			}
 			rotAverageY /= rotArrayY.Count;
- 
+			
 			Quaternion yQuaternion = Quaternion.AngleAxis (rotAverageY, Vector3.left);
 			transform.localRotation = originalRotation * yQuaternion;
+		}
+	}
+ 
+	void Update ()
+	{
+		if(nView.isMine){
+			ApplyEffect();
 		}
 	}
 	
