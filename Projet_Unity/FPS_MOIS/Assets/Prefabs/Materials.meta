@@ -1,7 +1,13 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Projet_Unity/FPS_MOIS/Assets/Prefabs/Materials.meta
 guid: 9f2be70fda0f5284ea16588e6c462960
 folderAsset: yes
 timeCreated: 1428395816
+=======
+guid: 96a59f9c712ee854f8ccbcadbffc329f
+folderAsset: yes
+timeCreated: 1429084901
+>>>>>>> Sebastien_1:Projet_Unity/FPS_MOIS/Assets/Materials.meta
 licenseType: Free
 DefaultImporter:
   userData: 
