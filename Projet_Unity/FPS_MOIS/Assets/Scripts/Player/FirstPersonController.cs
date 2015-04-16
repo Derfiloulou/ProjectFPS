@@ -21,6 +21,7 @@ public class FirstPersonController: MonoBehaviour
 	Vector3 syncEndPosition = Vector3.zero;
 	Quaternion syncEndRotation= Quaternion.identity;
 	Quaternion syncEndCamera= Quaternion.identity;
+	public GameObject camWeapon;
 
     public float walkSpeed = 6.0f;
     public float runSpeed = 10.0f;
@@ -87,8 +88,14 @@ public class FirstPersonController: MonoBehaviour
 				GetComponent<Renderer>().material = materialDebug;
 		}else{
 			GetComponentInChildren<Camera>().enabled = false;
+			camWeapon.SetActive(false);
 		}
     }
+	
+	[RPC]
+	void Restart(){
+		Application.LoadLevel("Networking_In_Game");
+	}
 
 	void MovePlayer(){
 		float inputX = Input.GetAxis("Horizontal");
@@ -227,6 +234,10 @@ public class FirstPersonController: MonoBehaviour
 		else
 		{
 			SyncedMovement();
+		}
+
+		if(Network.isServer && Input.GetKeyDown(KeyCode.Return)){
+			nView.RPC("Restart", RPCMode.All);
 		}
 
     }

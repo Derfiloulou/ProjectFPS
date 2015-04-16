@@ -4,10 +4,12 @@ using System.Collections;
 public class GameNetManager : MonoBehaviour {
 
 	public GameObject playerPrefab;
-	
+	public GameObject camera;
+
 	void Start()
 	{
 		SpawnPlayer();
+
 	}
 	
 	private void SpawnPlayer()
