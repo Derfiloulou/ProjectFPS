@@ -1,19 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameNetManager : MonoBehaviour {
 
 	public GameObject playerPrefab;
-	public GameObject camera;
 
 	void Start()
 	{
 		SpawnPlayer();
-
 	}
 	
-	private void SpawnPlayer()
+	void SpawnPlayer()
 	{
-		Network.Instantiate(playerPrefab, new Vector3(0f, 5f, 0f), Quaternion.identity, 0);
+		GameObject playerClone = Network.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
 	}
 }

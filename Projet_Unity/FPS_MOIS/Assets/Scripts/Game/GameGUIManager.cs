@@ -11,7 +11,7 @@ public class GameGUIManager : MonoBehaviour {
 	public Text availableBulletsText;
 	public Text shotCountText;
 	public Text bulletsLeftText;
-	public GameObject camera;
+	public GameObject cam;
 
 
 	static GameGUIManager mInst;
@@ -23,6 +23,6 @@ public class GameGUIManager : MonoBehaviour {
 	}
 
 	void Start(){
-		camera.SetActive(false);
+		cam.SetActive(false);
 	}
 }

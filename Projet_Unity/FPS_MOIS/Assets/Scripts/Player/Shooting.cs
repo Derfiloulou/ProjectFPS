@@ -67,12 +67,13 @@ public class Shooting : MonoBehaviour {
 						(int)GetCurrentShotLevel().colorRay.a
 					);
                     
-                    if (hit.transform.tag == "Joueur")
+                    if (hit.transform.tag == "Player")
                     {
-						NetworkViewID nViewEnemy = hit.collider.gameObject.GetComponent<NetworkView>().viewID;
+						NetworkView nViewEnemy = hit.collider.gameObject.GetComponent<NetworkView>();
 						int damages = GetCurrentShotLevel().shotStrength;
-
-						nView.RPC("SetHealth", RPCMode.All, nViewEnemy, damages);
+						nViewEnemy.RPC("SetHealth", RPCMode.All, damages);
+						//dafuq
+						GameGUIManager.instance.healthText.text = "Health : " + GetComponent<State>().health.ToString();
                     }
 
 					ShotLevel shotLevel = GetCurrentShotLevel();
@@ -136,11 +137,8 @@ public class Shooting : MonoBehaviour {
     }
 
 	[RPC]
-	void SetHealth(NetworkViewID _nViewID, int _damages){
-		if(_nViewID.isMine){
-			GetComponent<Etat>().vie -= _damages;
-			GameGUIManager.instance.healthText.text = "Health : " + GetComponent<Etat>().vie.ToString();
-		}
+	void SetHealth(int _damages){
+		GetComponent<State>().health -= _damages;
 	}
 
 
