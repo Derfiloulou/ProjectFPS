@@ -16,30 +16,38 @@ public struct ShotLevel {
 [System.Serializable]
 public class Shooting : MonoBehaviour {
 
+	[Header("Game Objects")]
     public GameObject impact;
 	public GameObject shotOrigin;
-	private int shotCount = 0;
+
+	[Header("Shot Levels")]
     public List<ShotLevel> shotLevels;
-    private float lastShot = 0;
-    private LineRenderer lr;
+
+	[Header("Shot Effect")]
 	public float shake = 0.1f;
+	public float shotAccuracy = 100;
+   
+	[HideInInspector]
+	public float shotDispersion;
+
+	float lastShot = 0;
+    LineRenderer lr;
+	int shotCount = 0;
 	NetworkView nView;
 	Camera camera;
 	bool isLevelMax =false;
-	AudioSource originAudio;
-	AudioSource playerAudio;
-	AudioClip hitSound;
-	AudioClip shotSound;
 	GameGUIManager gameGUIManager;
 	FirstPersonController fps;
 	Animator shootAnim;
 	Light shotLight;
 	ParticleSystem shotSystem;
-	public float shotAccuracy = 100;
-	[HideInInspector]
-	public float shotDispersion;
 
+	AudioSource originAudio;
+	AudioSource playerAudio;
 
+	AudioClip hitSound;
+	AudioClip shotSound;
+	
 	// DEBUG
 	int bulletsLeft;
 
@@ -56,6 +64,7 @@ public class Shooting : MonoBehaviour {
 		shootAnim = GetComponentInChildren<Animator>();
 		shotLight = GetComponent<Light>();
 		shotSystem = shotOrigin.GetComponent<ParticleSystem>();
+		shotDispersion = 0;
 
 		// DEBUG
 		GameGUIManager.instance.shotLevelText.text = "Shot level : " + (shotLevels[0].level+1).ToString();
@@ -72,6 +81,9 @@ public class Shooting : MonoBehaviour {
 			shotLight.range -= 5;
 		}
 
+		if(shotDispersion != 0){
+			shotDispersion = 0;
+		}
 
         if (nView.isMine && Input.GetKey(KeyCode.Mouse0))
         {
@@ -158,12 +170,8 @@ public class Shooting : MonoBehaviour {
 					(int)GetCurrentShotLevel().colorRay.a
 				);
 
-				camera.transform.localPosition += new Vector3(Random.Range(-shake,shake), Random.Range(-shake*10,shake*10),0);
+				camera.transform.localPosition += new Vector3(Random.Range(-shake,shake), Random.Range(-shake,shake),0);
             }
-
-			else{
-				shotDispersion = 0;
-			}
         }
 	}
 
