@@ -21,15 +21,27 @@ public class FirstPersonController: MonoBehaviour
 	Vector3 syncEndPosition = Vector3.zero;
 	Quaternion syncEndRotation= Quaternion.identity;
 	Quaternion syncEndCamera= Quaternion.identity;
+	public GameObject camView;
 	public GameObject camWeapon;
+	public float shootRayonStop = 20;
+	public float shootRayonWalking = 50;
+	public float shootRayonAiming = 1;
+	public float shootRayonRunning = 100;
+	[HideInInspector]
+	public float shootRayonCurrent;
+	[HideInInspector]
+	public float shootRayon;
+	Shooting shooting;
 
     public float walkSpeed = 6.0f;
     public float runSpeed = 10.0f;
- 
-    // If true, diagonal speed (when strafing + moving forward or back) can't exceed normal move speed; otherwise it's about 1.4 times faster
+	public float walkSpeedAiming = 3.0f;
+
+	
+	// If true, diagonal speed (when strafing + moving forward or back) can't exceed normal move speed; otherwise it's about 1.4 times faster
     private bool limitDiagonalSpeed = true;
  
-    public bool enableRunning = false;
+    //public bool enableRunning = false;
  
     public float jumpSpeed = 4.0f;
     public float gravity = 10.0f;
@@ -72,17 +84,23 @@ public class FirstPersonController: MonoBehaviour
  
     void Start()
     {
+
 		nView = GetComponent<NetworkView> ();
 		playerTransform = GetComponent<Transform> ();
 		playerRigidbody = GetComponent<Rigidbody> ();
 		cameraTransform = GetComponentInChildren<Camera>().transform;
 		controller = GetComponent<CharacterController>();
+		shootRayonCurrent = shootRayonWalking;
+		shooting = GetComponent<Shooting>();
 
         speed = walkSpeed;
         rayDistance = controller.height * .5f + controller.radius;
         slideLimit = controller.slopeLimit - .1f;
         jumpTimer = antiBunnyHopFactor;
 		if(nView.isMine){
+			AudioListener audioListener = camView.AddComponent<AudioListener>();
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
 			GetComponentInChildren<Camera>().enabled = true;
 			if(Network.isServer)
 				GetComponent<Renderer>().material = materialDebug;
@@ -126,10 +144,22 @@ public class FirstPersonController: MonoBehaviour
 					FallingDamageAlert (fallStartLevel - playerTransform.position.y);
 			}
 			
-			if( enableRunning )
+
+		   if(!Input.GetButton("Fire2"))
 			{
-				speed = Input.GetButton("Run")? runSpeed : walkSpeed;
+				if(Input.GetButton("Run")){
+					speed = runSpeed;
+					shootRayonCurrent = shootRayonStop + (shootRayonRunning * Input.GetAxis("Vertical")) + shooting.shotDispersion;
+				}else{
+					speed = walkSpeed;
+					shootRayonCurrent = shootRayonStop + (shootRayonWalking * Input.GetAxis("Vertical")) + shooting.shotDispersion;
+				}
 			}
+			else{
+				speed = walkSpeedAiming;
+				shootRayonCurrent = shootRayonAiming + shooting.shotDispersion;
+			}
+
 			
 			// If sliding (and it's allowed), or if we're on an object tagged "Slide", get a vector pointing down the slope we're on
 			if ( (sliding && slideWhenOverSlopeLimit) || (slideOnTaggedObjects && hit.collider.tag == "Slide") ) {
@@ -226,10 +256,14 @@ public class FirstPersonController: MonoBehaviour
 		}
 	}
  
-    void FixedUpdate() {
+    void Update() {
+
+		
 		if (nView.isMine)
 		{
 			MovePlayer();
+			GameGUIManager.instance.LerpAim(shootRayon);
+			shootRayon = Mathf.Lerp(shootRayon, shootRayonCurrent, Time.deltaTime*10);
 		}
 		else
 		{

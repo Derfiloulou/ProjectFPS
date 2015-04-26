@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class GameNetManager : MonoBehaviour {
 
 	public GameObject playerPrefab;
+	public GameObject[] players;
 
 	void Start()
 	{
@@ -15,4 +16,5 @@ public class GameNetManager : MonoBehaviour {
 	{
 		GameObject playerClone = Network.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
 	}
+
 }
