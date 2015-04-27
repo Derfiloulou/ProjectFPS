@@ -1,8 +1,4 @@
-﻿// original by Eric Haines (Eric5h5)
-// adapted by @torahhorse
-// http://wiki.unity3d.com/index.php/FPSWalkerEnhanced
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 [RequireComponent (typeof (CharacterController))]
@@ -88,7 +84,6 @@ public class FirstPersonController: MonoBehaviour
 
 		nView = GetComponent<NetworkView> ();
 		playerTransform = GetComponent<Transform> ();
-		//playerRigidbody = GetComponent<Rigidbody> ();
 		cameraTransform = GetComponentInChildren<Camera>().transform;
 		controller = GetComponent<CharacterController>();
 		shootRayonCurrent = shotStop;

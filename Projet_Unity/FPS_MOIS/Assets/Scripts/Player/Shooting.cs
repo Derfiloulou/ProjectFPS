@@ -4,9 +4,7 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public struct ShotLevel {
-
-	[HideInInspector]
-	public int level;
+	
     public int shotStrength;
     public int availableBullets;
     public int bulletsPerSecond;
@@ -19,6 +17,8 @@ public class Shooting : MonoBehaviour {
 	[Header("Game Objects")]
     public GameObject impact;
 	public GameObject shotOrigin;
+	public GameObject weapon;
+	public TextMesh availableBulletsText;
 
 	[Header("Shot Levels")]
     public List<ShotLevel> shotLevels;
@@ -34,13 +34,17 @@ public class Shooting : MonoBehaviour {
     LineRenderer lr;
 	int shotCount = 0;
 	NetworkView nView;
-	Camera camera;
-	bool isLevelMax =false;
+	Camera cam;
 	GameGUIManager gameGUIManager;
 	FirstPersonController fps;
 	Animator shootAnim;
 	Light shotLight;
 	ParticleSystem shotSystem;
+	ShotLevel currentShotLevel;
+	int currentShotLevelInt ;
+	int bulletsForThisLevel;
+	Renderer weaponRenderer;
+
 
 	AudioSource originAudio;
 	AudioSource playerAudio;
@@ -54,7 +58,7 @@ public class Shooting : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		nView = GetComponent<NetworkView>();
-		camera = GetComponentInChildren<Camera>();
+		cam = GetComponentInChildren<Camera>();
 		originAudio = shotOrigin.GetComponent<AudioSource>();
 		playerAudio = GetComponent<AudioSource>();
 		hitSound = GameSoundManager.instance.hit;
@@ -64,15 +68,16 @@ public class Shooting : MonoBehaviour {
 		shootAnim = GetComponentInChildren<Animator>();
 		shotLight = GetComponent<Light>();
 		shotSystem = shotOrigin.GetComponent<ParticleSystem>();
-		shotDispersion = 0;
+		weaponRenderer = weapon.GetComponent<Renderer>();
+		weaponRenderer.material = new Material(Shader.Find("Diffuse"));
 
-		// DEBUG
-		GameGUIManager.instance.shotLevelText.text = "Shot level : " + (shotLevels[0].level+1).ToString();
-		GameGUIManager.instance.availableBulletsText.text = "Available bullets : " + shotLevels[0].availableBullets.ToString();
-		GameGUIManager.instance.shotStrengthText.text = "Shot strength : " + shotLevels[0].shotStrength.ToString();
-		GameGUIManager.instance.bulletPerSecondText.text = "Bullet per second : " + shotLevels[0].bulletsPerSecond.ToString();
-		GameGUIManager.instance.shotCountText.text = "Shot count : " + shotCount.ToString();
-		GameGUIManager.instance.bulletsLeftText.text = "Bullets Left for this level : " + shotLevels[0].availableBullets.ToString();
+		shotDispersion = 0;
+		currentShotLevelInt = 0;
+		currentShotLevel = shotLevels[0];
+		bulletsForThisLevel = shotLevels[0].availableBullets;
+		weaponRenderer.material.color = shotLevels[0].colorRay;
+		availableBulletsText.text = bulletsForThisLevel.ToString();
+
 	}
 	
 	// Update is called once per frame
@@ -87,10 +92,12 @@ public class Shooting : MonoBehaviour {
 
         if (nView.isMine && Input.GetKey(KeyCode.Mouse0))
         {
-            if (Time.time > lastShot + 1.0f/(float)GetCurrentShotLevel().bulletsPerSecond) 
+            if (Time.time > lastShot + 1.0f/(float)currentShotLevel.bulletsPerSecond) 
             {
                 lastShot = Time.time;
-				shotCount++;
+
+				originAudio.pitch = 0.5f + (((float)currentShotLevelInt)/(float)shotLevels.Count);
+				//Debug.Log(0.5f + ((currentShotLevelInt)/shotLevels.Count));
 				originAudio.PlayOneShot(shotSound);
 				shootAnim.SetTrigger("Shot");
 				shotDispersion = shotAccuracy;
@@ -100,7 +107,7 @@ public class Shooting : MonoBehaviour {
 				shotSystem.Emit(1);
 				shotLight.range = 20;
 
-				Ray ray = camera.ViewportPointToRay(newPosition);
+				Ray ray = cam.ViewportPointToRay(newPosition);
                 RaycastHit hit;
 
 
@@ -109,7 +116,7 @@ public class Shooting : MonoBehaviour {
                     if (hit.transform.tag == "Player")
                     {
 						NetworkView nViewEnemy = hit.collider.gameObject.GetComponent<NetworkView>();
-						int damages = GetCurrentShotLevel().shotStrength;
+						int damages = currentShotLevel.shotStrength;
 
 						playerAudio.PlayOneShot(hitSound);
 						gameGUIManager.SetAlphaImage(gameGUIManager.hitmarkerImage, 1);
@@ -119,90 +126,45 @@ public class Shooting : MonoBehaviour {
 						//dafuq
 						GameGUIManager.instance.healthText.text = "Health : " + GetComponent<State>().health.ToString();
                     }
-
-					ShotLevel shotLevel = GetCurrentShotLevel();
-					
-					// DEBUG
-					if(bulletsLeft == 0 || GameGUIManager.instance.shotLevelText.text == "Shot level : max.") {
-						if(shotLevel.level+1 < shotLevels.Count){
-							// DEBUG
-							GameGUIManager.instance.shotLevelText.text = "Shot level : " + (shotLevel.level+2).ToString();
-							GameGUIManager.instance.availableBulletsText.text = "Available bullets : " + shotLevels[shotLevel.level+1].availableBullets.ToString();
-							GameGUIManager.instance.shotStrengthText.text = "Shot strength : " + shotLevels[shotLevel.level+1].shotStrength.ToString();
-							GameGUIManager.instance.bulletPerSecondText.text = "Bullet per second : " + shotLevels[shotLevel.level+1].bulletsPerSecond.ToString();
-							GameGUIManager.instance.shotCountText.text = "Shot count : " + shotCount.ToString();
-							GameGUIManager.instance.bulletsLeftText.text = "Bullets Left for this level : " + shotLevels[shotLevel.level+1].availableBullets.ToString();
-						}
-						if(shotLevel.level+2 >= shotLevels.Count && bulletsLeft == 0){
-							isLevelMax = true;
-						}
-						
-					}
-					else {
-						// DEBUG
-						GameGUIManager.instance.shotLevelText.text = "Shot level : " + (shotLevel.level+1).ToString();
-						GameGUIManager.instance.availableBulletsText.text = "Available bullets : " + shotLevel.availableBullets.ToString();
-						GameGUIManager.instance.shotStrengthText.text = "Shot strength : " + shotLevel.shotStrength.ToString();
-						GameGUIManager.instance.bulletPerSecondText.text = "Bullet per second : " + shotLevel.bulletsPerSecond.ToString();
-						GameGUIManager.instance.shotCountText.text = "Shot count : " + shotCount.ToString();
-						GameGUIManager.instance.bulletsLeftText.text = "Bullets Left for this level : " + bulletsLeft.ToString();
-					}
-					
-					if(isLevelMax){
-						GameGUIManager.instance.shotLevelText.text = "Shot level : max." ;
-						GameGUIManager.instance.availableBulletsText.text = "Available bullets : inf.";
-						GameGUIManager.instance.shotStrengthText.text = "Shot strength : " + shotLevel.shotStrength.ToString();
-						GameGUIManager.instance.bulletPerSecondText.text = "Bullet per second : " + shotLevel.bulletsPerSecond.ToString();
-						GameGUIManager.instance.shotCountText.text = "Shot count : " + shotCount.ToString();
-						GameGUIManager.instance.bulletsLeftText.text = "Bullets Left for this level : inf.";
-					}
-
-
                 }
 				nView.RPC(
 					"DisplayShotEffects", 
 					RPCMode.All, 
 					hit.point, 
 					shotOrigin.transform.position, 
-					(int)GetCurrentShotLevel().colorRay.r,
-					(int)GetCurrentShotLevel().colorRay.g,
-					(int)GetCurrentShotLevel().colorRay.b,
-					(int)GetCurrentShotLevel().colorRay.a
+					(int)currentShotLevel.colorRay.r,
+					(int)currentShotLevel.colorRay.g,
+					(int)currentShotLevel.colorRay.b,
+					(int)currentShotLevel.colorRay.a
 				);
 
-				camera.transform.localPosition += new Vector3(Random.Range(-shake,shake), Random.Range(-shake,shake),0);
+				cam.transform.localPosition += new Vector3(Random.Range(-shake,shake), Random.Range(-shake,shake),0);
+				UpdateCurrentShotLevel();
             }
         }
 	}
 
+	void UpdateCurrentShotLevel(){
+		shotCount++;
+		bulletsForThisLevel --;
 
-    ShotLevel GetCurrentShotLevel()
-    {
-        int shots = 0;
-        
-		for (int i = 0; i < shotLevels.Count; i++)
-        {
-            ShotLevel sl = shotLevels[i];
+		if(bulletsForThisLevel == 0 && currentShotLevelInt < shotLevels.Count-1){
+			currentShotLevelInt ++;
+			currentShotLevel = shotLevels[currentShotLevelInt];
+			bulletsForThisLevel = currentShotLevel.availableBullets;
+			weaponRenderer.material.color = shotLevels[currentShotLevelInt].colorRay;
+		}
+		if(currentShotLevelInt == shotLevels.Count-1)
+			availableBulletsText.text = "∞";
+		else
+			availableBulletsText.text = bulletsForThisLevel.ToString();
 
-			if (shotCount <= shots + sl.availableBullets)
-            {
-				sl.level = i;
-				bulletsLeft = shots + sl.availableBullets - shotCount;
-                return sl;
-            }
-            shots += sl.availableBullets;
-        }
-
-        return shotLevels[shotLevels.Count - 1];
-
-    }
+	}
 
 	[RPC]
 	void SetHealth(int _damages){
 		GetComponent<State>().health -= _damages;
 	}
-
-
 
 	[RPC]
 	void DisplayShotEffects(Vector3 _hitPoint, Vector3 _shotOrigin, int _colorRayR, int _colorRayG, int _colorRayB, int _colorRayA){
@@ -216,7 +178,7 @@ public class Shooting : MonoBehaviour {
 		_lrShot.enabled = true;
 		_lrShot.material = new Material(Shader.Find("Unlit/Color"));
 		_lrShot.material.color = _colorRay;
-		_lrShot.SetWidth(0.02f, 0.02f);
+		_lrShot.SetWidth(0.005f, 0.005f);
 		_lrShot.SetPosition(0, _shotOrigin);
 		_lrShot.SetPosition(1, _hitPoint);
 
@@ -224,6 +186,7 @@ public class Shooting : MonoBehaviour {
 	}
 
 	IEnumerator DestroyShotEffects(LineRenderer _lr, GameObject _go){
+		yield return new WaitForEndOfFrame();
 		yield return new WaitForEndOfFrame();
 		_lr.enabled = false;
 		yield return new WaitForSeconds(10f);
