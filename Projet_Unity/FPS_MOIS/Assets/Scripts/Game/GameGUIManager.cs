@@ -4,10 +4,7 @@ using System.Collections;
 
 public class GameGUIManager : MonoBehaviour {
 
-	public Image aimLeft;
-	public Image aimRight;
-	public Image aimUp;
-	public Image aimDown;
+	public Image[] aim;
 	public Image hitmarkerImage;
 	public Text healthText;
 	public Text shotLevelText;
@@ -29,21 +26,32 @@ public class GameGUIManager : MonoBehaviour {
 		_target.color = newColor;
 	}
 
-	public IEnumerator FadeImage(Image _target, float _time){
+	public IEnumerator FadeImage(Image _target, float _time, bool _increase){
+
 		Color newColor = _target.color;
-		while(newColor.a > 0){
-			newColor.a -= Time.deltaTime/_time;
-			_target.color = newColor;
-			yield return new WaitForEndOfFrame();
+
+		if (_increase) {
+			while(newColor.a < 1){
+				newColor.a += Time.deltaTime/_time;
+				_target.color = newColor;
+				yield return new WaitForEndOfFrame();
+			}
+		} else {
+			while(newColor.a > 0){
+				newColor.a -= Time.deltaTime/_time;
+				_target.color = newColor;
+				yield return new WaitForEndOfFrame();
+			}
 		}
 	}
 
 	public void LerpAim(float _amount){
 		_amount += 7;
-		aimUp.rectTransform.position = Vector3.Lerp(aimUp.rectTransform.position, new Vector3(Screen.width/2,_amount + Screen.height/2,0), 10*Time.deltaTime);
-		aimDown.rectTransform.position = Vector3.Lerp(aimDown.rectTransform.position, new Vector3(Screen.width/2,-_amount + Screen.height/2,0), 10*Time.deltaTime);
-		aimLeft.rectTransform.position = Vector3.Lerp(aimLeft.rectTransform.position, new Vector3(-_amount + Screen.width/2 , Screen.height/2,0), 10*Time.deltaTime);
-		aimRight.rectTransform.position = Vector3.Lerp(aimRight.rectTransform.position, new Vector3(_amount + Screen.width/2 , Screen.height/2,0), 10*Time.deltaTime);
+		aim[0].rectTransform.position = Vector3.Lerp(aim[0].rectTransform.position, new Vector3(Screen.width/2,_amount + Screen.height/2,0), 10*Time.deltaTime);
+		aim[1].rectTransform.position = Vector3.Lerp(aim[1].rectTransform.position, new Vector3(_amount + Screen.width/2 , Screen.height/2,0), 10*Time.deltaTime);
+		aim[2].rectTransform.position = Vector3.Lerp(aim[2].rectTransform.position, new Vector3(Screen.width/2,-_amount + Screen.height/2,0), 10*Time.deltaTime);
+		aim[3].rectTransform.position = Vector3.Lerp(aim[3].rectTransform.position, new Vector3(-_amount + Screen.width/2 , Screen.height/2,0), 10*Time.deltaTime);
+
 	}
 
 	void Awake () {
@@ -53,5 +61,22 @@ public class GameGUIManager : MonoBehaviour {
 
 	void Start(){
 		cam.SetActive(false);
+	}
+
+	void Update(){
+		if(Input.GetButtonDown ("Aim")){
+			foreach(Image i in aim){
+				SetAlphaImage(i, 1);
+				StartCoroutine(FadeImage(i, 0.2f, false));
+			}
+		}
+		
+		if(Input.GetButtonUp ("Aim")){
+			foreach(Image i in aim){
+				SetAlphaImage(i, 0);
+				StartCoroutine(FadeImage(i, 0.2f, true));
+			}
+		}
+
 	}
 }

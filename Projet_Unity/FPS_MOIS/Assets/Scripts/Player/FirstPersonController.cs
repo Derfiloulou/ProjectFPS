@@ -12,8 +12,13 @@ public class FirstPersonController: MonoBehaviour
 	[Header("Player Speed")]
     public float walkSpeed = 6.0f;
     public float runSpeed = 10.0f;
-	public float walkSpeedAiming = 3.0f;
+	public float crouchSpeed = 10;
+	public float aimSpeedMultiplier = 3.0f;
 
+	[Header("Crouch")]
+	public float crouchAmount = 1;
+	public float crouchTime = 10;
+	
 	[Header("Shot Dispersion")]
 	public float shotStop = 20;
 	public float shotMovingMultiplier = 20;
@@ -22,41 +27,35 @@ public class FirstPersonController: MonoBehaviour
 	[Header("Others")]
 	public float jumpSpeed = 4.0f;
     public float gravity = 10.0f;
-    // Units that player can fall before a falling damage function is run. To disable, type "infinity" in the inspector
-    private float fallingDamageThreshold = 10.0f;
-    // If the player ends up on a slope which is at least the Slope Limit as set on the character controller, then he will slide down
     public bool slideWhenOverSlopeLimit = false;
-    // If checked and the player is on an object tagged "Slide", he will slide down it regardless of the slope limit
     public bool slideOnTaggedObjects = false;
     public float slideSpeed = 5.0f;
-    // If checked, then the player can change direction while in the air
     public bool airControl = true;
-    // Small amounts of this results in bumping when walking down slopes, but large amounts results in falling too fast
     public float antiBumpFactor = .75f;
-    // Player must be grounded for at least this many physics frames before being able to jump again; set to 0 to allow bunny hopping
     public int antiBunnyHopFactor = 1;
  
 	[HideInInspector]
 	public float shootRayonCurrent;
 	[HideInInspector]
 	public float shootRayon;
-	
 
     CharacterController controller;
 	Shooting shooting;
 	int jumpTimer;
 	RaycastHit hit;
 	NetworkView nView;
-	//Rigidbody playerRigidbody;
    
 	Vector3 moveDirection = Vector3.zero;
 	Vector3 contactPoint;
 	Vector3 syncStartPosition = Vector3.zero;
 	Vector3 syncEndPosition = Vector3.zero;
+	Vector3 cameraOrigin;
+	Vector3 cameraCrouch;
 	
 	Transform playerTransform;
 	Transform cameraTransform;
 
+	float fallingDamageThreshold = 10.0f;
     float speed;
     float fallStartLevel;
     float slideLimit;
@@ -64,11 +63,10 @@ public class FirstPersonController: MonoBehaviour
 	float lastSynchronizationTime = 0f;
 	float syncDelay = 0f;
 	float syncTime = 0f;
+	float aimSpeedMultiplierCurrent;
 
 	Quaternion syncEndRotation= Quaternion.identity;
-	Quaternion syncEndCamera= Quaternion.identity;
 	Quaternion syncStartRotation= Quaternion.identity;
-	Quaternion syncStartCamera= Quaternion.identity;
 
 	bool limitDiagonalSpeed = true;
 	bool grounded = false;
@@ -82,21 +80,24 @@ public class FirstPersonController: MonoBehaviour
 
 		nView = GetComponent<NetworkView> ();
 		playerTransform = GetComponent<Transform> ();
-		cameraTransform = GetComponentInChildren<Camera>().transform;
 		controller = GetComponent<CharacterController>();
-		shootRayonCurrent = shotStop;
 		shooting = GetComponent<Shooting>();
-        speed = walkSpeed;
-        rayDistance = controller.height * .5f + controller.radius;
-        slideLimit = controller.slopeLimit - .1f;
-        jumpTimer = antiBunnyHopFactor;
 
 		if(nView.isMine){
 			AudioListener audioListener = camView.AddComponent<AudioListener>();
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			GetComponentInChildren<Camera>().enabled = true;;
+			GetComponentInChildren<Camera>().enabled = true;
+			cameraTransform = GetComponentInChildren<Camera>().transform;
+			shootRayonCurrent = shotStop;
+			speed = walkSpeed;
+			rayDistance = controller.height * .5f + controller.radius;
+			slideLimit = controller.slopeLimit - .1f;
+			jumpTimer = antiBunnyHopFactor;
 			Destroy(mesh);
+			cameraOrigin = cameraTransform.localPosition;
+			cameraCrouch = cameraOrigin + new Vector3(0,-crouchAmount,0);
+			aimSpeedMultiplierCurrent = aimSpeedMultiplier;
 		}else{
 			GetComponentInChildren<Camera>().enabled = false;
 			camWeapon.SetActive(false);
@@ -111,7 +112,7 @@ public class FirstPersonController: MonoBehaviour
 		// If both horizontal and vertical are used simultaneously, limit speed (if allowed), so the total doesn't exceed normal move speed
 		float inputModifyFactor = (inputX != 0.0f && inputY != 0.0f && limitDiagonalSpeed)? .7071f : 1.0f;
 
-		if(!Input.GetButton("Fire2"))
+		if(!Input.GetButton("Aim"))
 			shootRayonCurrent = shotStop + shooting.shotDispersion + Mathf.Abs (controller.velocity.magnitude)*shotMovingMultiplier;
 		else{
 			shootRayonCurrent = shooting.shotDispersion + Mathf.Abs (controller.velocity.magnitude)*shotAimingMultiplier;
@@ -133,29 +134,29 @@ public class FirstPersonController: MonoBehaviour
 					sliding = true;
 			}
 			
-			// If we were falling, and we fell a vertical distance greater than the threshold, run a falling damage routine
 			if (falling) {
 				falling = false;
 				if (playerTransform.position.y < fallStartLevel - fallingDamageThreshold)
 					FallingDamageAlert (fallStartLevel - playerTransform.position.y);
 			}
-			
 
-		   if(!Input.GetButton("Fire2"))
-			{
-				if(Input.GetButton("Run")){
-					speed = runSpeed;
-
-				}else{
-					speed = walkSpeed;
-				
-				}
-			}
-			else{
-				speed = walkSpeedAiming;
-
+			if(Input.GetButton("Aim")){
+				aimSpeedMultiplierCurrent = aimSpeedMultiplier;
+			}else{
+				aimSpeedMultiplierCurrent = 1;
 			}
 
+		 	if(Input.GetButton("Run")){
+
+				speed = runSpeed * aimSpeedMultiplierCurrent;
+
+			}else if(Input.GetButton("Crouch")){
+				cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, cameraCrouch, crouchTime * Time.deltaTime);
+				speed = crouchSpeed* aimSpeedMultiplierCurrent;
+			}else{
+				speed = walkSpeed * aimSpeedMultiplierCurrent;
+				cameraTransform.localPosition = Vector3.Lerp(cameraTransform.localPosition, cameraOrigin, crouchTime * Time.deltaTime);
+			}
 
 			
 			// If sliding (and it's allowed), or if we're on an object tagged "Slide", get a vector pointing down the slope we're on
@@ -187,7 +188,6 @@ public class FirstPersonController: MonoBehaviour
 				falling = true;
 				fallStartLevel = playerTransform.position.y;
 			}
-			
 			// If air control is allowed, check movement but don't touch the y component
 			if (airControl && playerControl) {
 				moveDirection.x = inputX * speed * inputModifyFactor;
@@ -208,7 +208,6 @@ public class FirstPersonController: MonoBehaviour
 		syncTime += Time.deltaTime;
 		playerTransform.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
 		playerTransform.rotation = Quaternion.Lerp(syncStartRotation, syncEndRotation, syncTime / syncDelay);
-		cameraTransform.rotation = Quaternion.Lerp(syncStartCamera, syncEndCamera, syncTime / syncDelay);
 	}
 
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
@@ -216,43 +215,47 @@ public class FirstPersonController: MonoBehaviour
 		Vector3 syncPosition = Vector3.zero;
 		Vector3 syncVelocity = Vector3.zero;
 		Quaternion syncRotation = Quaternion.identity;
-		Quaternion syncCamera = Quaternion.identity;
 		
 		
 		if (stream.isWriting)
 		{
-			syncPosition = playerTransform.position;
-			stream.Serialize(ref syncPosition);
-			
-			syncVelocity = controller.velocity;
-			stream.Serialize(ref syncVelocity);
-			
-			syncRotation = playerTransform.rotation;
-			stream.Serialize(ref syncRotation);
-			
-			syncCamera = cameraTransform.rotation;
-			stream.Serialize(ref syncCamera);
+			if(playerTransform != null){
+				syncPosition = playerTransform.position;
+				stream.Serialize(ref syncPosition);
+				
+				syncVelocity = controller.velocity;
+				stream.Serialize(ref syncVelocity);
+				
+				syncRotation = playerTransform.rotation;
+				stream.Serialize(ref syncRotation);
+			}
 		}
 		else
 		{
-			stream.Serialize(ref syncPosition);
-			stream.Serialize(ref syncVelocity);
-			stream.Serialize(ref syncRotation);
-			stream.Serialize(ref syncCamera);
-			
-			syncTime = 0f;
-			syncDelay = Time.time - lastSynchronizationTime;
-			lastSynchronizationTime = Time.time;
-			
-			syncEndPosition = syncPosition + syncVelocity * syncDelay;
-			syncEndRotation = syncRotation;
-			syncEndCamera = syncCamera;
-			syncStartPosition = playerTransform.position;
-			syncStartRotation = playerTransform.rotation;
-			syncStartCamera = cameraTransform.rotation;
+			if(playerTransform != null){
+				stream.Serialize(ref syncPosition);
+				stream.Serialize(ref syncVelocity);
+				stream.Serialize(ref syncRotation);
+				
+				syncTime = 0f;
+				syncDelay = Time.time - lastSynchronizationTime;
+				lastSynchronizationTime = Time.time;
+				
+				syncEndPosition = syncPosition + syncVelocity * syncDelay;
+				syncEndRotation = syncRotation;
+				syncStartPosition = playerTransform.position;
+				syncStartRotation = playerTransform.rotation;
+			}
 		}
 	}
  
+
+	[RPC]
+	void Restart(){
+		Application.LoadLevel("Networking_In_Game");
+	}
+	
+
     void Update() {
 
 		
@@ -261,12 +264,16 @@ public class FirstPersonController: MonoBehaviour
 			MovePlayer();
 			GameGUIManager.instance.LerpAim(shootRayon);
 			shootRayon = Mathf.Lerp(shootRayon, shootRayonCurrent, Time.deltaTime*10);
+
 		}
 		else
 		{
 			SyncedMovement();
 		}
 
+		if(Network.isServer && Input.GetKeyDown(KeyCode.Return)){
+			nView.RPC("Restart", RPCMode.All);
+		}
 
 
     }

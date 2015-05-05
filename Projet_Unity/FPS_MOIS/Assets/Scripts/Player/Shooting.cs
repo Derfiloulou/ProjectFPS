@@ -140,7 +140,7 @@ public class Shooting : MonoBehaviour {
 
 						playerAudio.PlayOneShot(hitSound);
 						gameGUIManager.SetAlphaImage(gameGUIManager.hitmarkerImage, 1);
-						StartCoroutine(gameGUIManager.FadeImage(gameGUIManager.hitmarkerImage, 0.5f));
+						StartCoroutine(gameGUIManager.FadeImage(gameGUIManager.hitmarkerImage, 0.5f, false));
 
 
                     }

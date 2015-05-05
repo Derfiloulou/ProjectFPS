@@ -19,15 +19,6 @@ public class GameNetManager : MonoBehaviour {
 		GameObject playerClone = Network.Instantiate(playerPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
 	}
 
-	[RPC]
-	void Restart(){
-		Application.LoadLevel("Networking_In_Game");
-	}
-	
-	void Update(){
-		if(Network.isServer && Input.GetKeyDown(KeyCode.Return)){
-			nView.RPC("Restart", RPCMode.All);
-		}
-	}
+
 
 }
