@@ -20,12 +20,20 @@ public class Shooting : MonoBehaviour {
 	public GameObject weapon;
 	public TextMesh availableBulletsText;
 
+	[Header("Shot Effect")]
+	public float shake = 0.1f;
+	public float shotAccuracy = 30;
+
+	[Header("Shot Multiplier")]
+	public int limbMultiplier = 1;
+	public int bodyMultiplier = 2;
+	public int headMultiplier = 4;
+
+
 	[Header("Shot Levels")]
     public List<ShotLevel> shotLevels;
 
-	[Header("Shot Effect")]
-	public float shake = 0.1f;
-	public float shotAccuracy = 100;
+
    
 	[HideInInspector]
 	public float shotDispersion;
@@ -90,14 +98,15 @@ public class Shooting : MonoBehaviour {
 			shotDispersion = 0;
 		}
 
+		// Tir
         if (nView.isMine && Input.GetKey(KeyCode.Mouse0))
         {
+			// Tir dispo
             if (Time.time > lastShot + 1.0f/(float)currentShotLevel.bulletsPerSecond) 
             {
                 lastShot = Time.time;
 
 				originAudio.pitch = 0.5f + (((float)currentShotLevelInt)/(float)shotLevels.Count);
-				//Debug.Log(0.5f + ((currentShotLevelInt)/shotLevels.Count));
 				originAudio.PlayOneShot(shotSound);
 				shootAnim.SetTrigger("Shot");
 				shotDispersion = shotAccuracy;
@@ -110,23 +119,33 @@ public class Shooting : MonoBehaviour {
 				Ray ray = cam.ViewportPointToRay(newPosition);
                 RaycastHit hit;
 
-
+				// Touche le joueur
                 if (Physics.Raycast(ray, out hit))
                 {                    
-                    if (hit.transform.tag == "Player")
+					if (hit.transform.tag == "Body" || hit.transform.tag == "Limb" || hit.transform.tag == "Head")
                     {
-						NetworkView nViewEnemy = hit.collider.gameObject.GetComponent<NetworkView>();
-						int damages = currentShotLevel.shotStrength;
+						NetworkView nViewEnemy = hit.collider.gameObject.GetComponentInParent<NetworkView>();
+						int multiplier = 1;
+						int damages = 0;
+
+						if(hit.transform.tag == "Body") multiplier = bodyMultiplier;
+						if(hit.transform.tag == "Limb") multiplier = limbMultiplier;
+						if(hit.transform.tag == "Head") multiplier = headMultiplier;
+
+						damages = currentShotLevel.shotStrength * multiplier;
+						nViewEnemy.RPC("SetHealth", RPCMode.All, damages);
+						GameGUIManager.instance.healthText.text = "Health : " + GetComponent<State>().health.ToString();
+
+						Debug.Log(hit.transform.tag + " / " + currentShotLevel.shotStrength + " / " + multiplier);
 
 						playerAudio.PlayOneShot(hitSound);
 						gameGUIManager.SetAlphaImage(gameGUIManager.hitmarkerImage, 1);
 						StartCoroutine(gameGUIManager.FadeImage(gameGUIManager.hitmarkerImage, 0.5f));
 
-						nViewEnemy.RPC("SetHealth", RPCMode.All, damages);
-						//dafuq
-						GameGUIManager.instance.healthText.text = "Health : " + GetComponent<State>().health.ToString();
+
                     }
                 }
+
 				nView.RPC(
 					"DisplayShotEffects", 
 					RPCMode.All, 

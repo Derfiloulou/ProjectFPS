@@ -7,9 +7,7 @@ public class FirstPersonController: MonoBehaviour
 	[Header("Game Objects")]
 	public GameObject camView;
 	public GameObject camWeapon;
-	
-	[Header("Materials")]
-	public Material materialDebug;
+	public GameObject mesh;
 
 	[Header("Player Speed")]
     public float walkSpeed = 6.0f;
@@ -97,19 +95,15 @@ public class FirstPersonController: MonoBehaviour
 			AudioListener audioListener = camView.AddComponent<AudioListener>();
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			GetComponentInChildren<Camera>().enabled = true;
-			if(Network.isServer)
-				GetComponent<Renderer>().material = materialDebug;
+			GetComponentInChildren<Camera>().enabled = true;;
+			Destroy(mesh);
 		}else{
 			GetComponentInChildren<Camera>().enabled = false;
 			camWeapon.SetActive(false);
+			Destroy(GetComponent<CapsuleCollider>());
 		}
     }
 	
-	[RPC]
-	void Restart(){
-		Application.LoadLevel("Networking_In_Game");
-	}
 
 	void MovePlayer(){
 		float inputX = Input.GetAxis("Horizontal");
@@ -273,9 +267,7 @@ public class FirstPersonController: MonoBehaviour
 			SyncedMovement();
 		}
 
-		if(Network.isServer && Input.GetKeyDown(KeyCode.Return)){
-			nView.RPC("Restart", RPCMode.All);
-		}
+
 
     }
  
